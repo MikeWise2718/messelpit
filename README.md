@@ -19,6 +19,33 @@ uv venv
 uv pip install -e .
 ```
 
+## Bootstrap on a new machine (laptop, etc.)
+
+End-to-end from a fresh clone to a ready-to-view USD, skipping the
+multi-GB full-res variant:
+
+```powershell
+git clone https://github.com/MikeWise2718/messelpit
+cd messelpit
+uv venv
+uv pip install -e .
+
+# Manual: download the 29 DGM1 + 29 DOP20 tiles from HVBG into
+# data\raw\dgm1\ and data\raw\dop20\. See "Pipeline > 1. Download" below.
+.venv\Scripts\python.exe tools\download_messel_data.py --open-browser
+
+# Once tiles are in place:
+.venv\Scripts\python.exe tools\prep_rasters.py
+.\tools\build_variants.ps1 -SkipFullRes
+```
+
+Result: `out\messel_med.usd` (~65 MB, default for the desktop Kit viewer)
+and `out\messel_lo.usd` (~16 MB, the Quest streaming target). The sibling
+[messelpit_viewer](https://github.com/MikeWise2718/messelpit_viewer) repo
+launches `messel_med.usd` automatically if cloned as a sibling directory.
+
+Full step-by-step (with the manual HVBG download walkthrough) is below.
+
 ## Pipeline
 
 ### 1. Download the Hessen tiles (one-time, manual, ~10 min)
