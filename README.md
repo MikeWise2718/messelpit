@@ -73,19 +73,47 @@ DGM1 + DOP20 onto that bbox, drops the NIR channel of the ortho, and caps the
 long texture axis at 16 384 px (the D3D12 / Omniverse RTX limit). Output:
 `data\prep\dem.tif`, `data\prep\ortho.png`, `data\prep\origin.json`.
 
-### 3. Build the USD (and .usdz)
+### 3. Build the USD variants
+
+Three mesh densities are built from the same DEM + texture:
+
+| Variant            | Decimate | Verts  | Tris    | `.usd` | `.usdz` | Use                                  |
+|--------------------|---------:|-------:|--------:|-------:|--------:|--------------------------------------|
+| `messel.usd`       | 1        | ~54 M  | ~108 M  | ~1 GB  | ~1.2 GB | Reference / offline renders          |
+| `messel_med.usd`   | 4        | ~3.4 M | ~6.7 M  | ~65 MB | ~220 MB | **Default for desktop Kit viewer**   |
+| `messel_lo.usd`    | 8        | ~840 K | ~1.7 M  | ~16 MB | ~170 MB | Quest streaming target               |
+
+Why three: the full-res mesh triggers a `device lost` GPU crash ~30 s after
+stage open on RTX 4080-class hardware in Omniverse Kit (works fine in
+`usdview` though, which uses Storm/OpenGL). The med variant is what the
+sibling viewer repo's `launch.bat` defaults to.
+
+**Note**: the texture (`ortho.png`) is the same for all three variants —
+only the mesh density changes. So the `.usdz` files don't shrink as much as
+the `.usd` files, because each `.usdz` bundles a copy of the ~150 MB
+orthophoto.
+
+Build all three with one command:
 
 ```powershell
-.venv\Scripts\python.exe -m messelpit.build_usd --usdz
+.\tools\build_variants.ps1
 ```
 
-Output: `out\messel.usd` + `out\ortho.png` (and `out\messel.usdz` if `--usdz`).
+This skips variants that already exist (incremental re-runs are cheap).
+Useful flags:
 
-For first iteration on a slow machine, decimate the mesh:
+- `-Force` — rebuild everything from scratch
+- `-SkipFullRes` — only build med + lo (the variants you actually use day-to-day)
+- `-NoUsdz` — don't pack `.usdz` (faster but loses portability)
+
+Or build a single variant directly:
 
 ```powershell
-.venv\Scripts\python.exe -m messelpit.build_usd --decimate 4
+.venv\Scripts\python.exe -m messelpit.build_usd --decimate 4 --out out\messel_med.usd --usdz
 ```
+
+Output: `out\messel*.usd` + `out\messel*.usdz` + `out\ortho.png` (copied from
+`data\prep\ortho.png` so the USD's relative texture reference resolves).
 
 ## Verifying the pipeline without the Hessen download
 
@@ -113,6 +141,7 @@ src/messelpit/__init__.py      __version__
 src/messelpit/build_usd.py     mesh + material authoring
 tools/download_messel_data.py  opens HVBG shop pages
 tools/prep_rasters.py          mosaic/crop/recenter
+tools/build_variants.ps1       build full / med / lo USD variants
 tools/smoke_test.py            offline sanity check
 data/                          (gitignored) raw + prepped rasters
 out/                           (gitignored) final .usd / .usdz
