@@ -21,22 +21,68 @@ uv pip install -e .
 
 ## Pipeline
 
+### 1. Download the Hessen tiles (one-time, manual, ~10 min)
+
+The HVBG Intershop is the only canonical distribution channel for DGM1 + DOP20
+and uses a session-based order workflow (free, no login, but no stable per-tile
+URL). So this step is manual on each fresh machine.
+
+Open both shop pages (a helper exists to launch them in your default browser):
+
 ```powershell
-# 1. Download (one-time, manual; opens shop pages in your browser)
 .venv\Scripts\python.exe tools\download_messel_data.py --open-browser
-#    Use the map selector, accept dl-de/zero-2.0, download both ZIPs,
-#    unzip into data\raw\dgm1\ and data\raw\dop20\.
-
-# 2. Mosaic + crop + recenter to local meters
-.venv\Scripts\python.exe tools\prep_rasters.py
-
-# 3. Build the USD (and .usdz)
-.venv\Scripts\python.exe -m messelpit.build_usd --usdz
-
-# Result: out\messel.usd + out\ortho.png  (and out\messel.usdz)
 ```
 
+Or open them directly:
+
+- **DGM1** (1 m DEM): <https://gds.hessen.de/INTERSHOP/web/WFS/HLBG-Geodaten-Site/de_DE/-/EUR/ViewDownloadcenter-Start?path=3D-Daten/Digitales+Gel%C3%A4ndemodell+(DGM1)>
+- **DOP20** (0.2 m orthophoto): <https://gds.hessen.de/INTERSHOP/web/WFS/HLBG-Geodaten-Site/de_DE/-/EUR/ViewDownloadcenter-Start?path=Luftbildinformationen/Digitale+Orthophotos+DOP20>
+
+On each page:
+
+1. Drill down: **Landkreis Darmstadt-Dieburg → Gemeinde Messel**, then go back
+   and also do **Stadt Darmstadt** (the bbox crosses the city boundary).
+2. Either use the map selector or, faster, the **filename search**: pick the
+   29 tiles whose filenames are listed in [`data/tile_manifest.txt`](data/tile_manifest.txt).
+   Tile names encode the SW corner in km — e.g. `dgm1_32_482_5530_1_he.tif` is
+   the 1 km tile at UTM 32N easting 482 000, northing 5 530 000.
+3. Add the tiles to your basket, accept the
+   *Datenlizenz Deutschland – Zero – Version 2.0* terms, and place the free
+   order (no login required since 2022).
+4. Download the resulting ZIPs.
+5. Unzip them so the DGM1 `.tif` + `.tfw` files land in `data\raw\dgm1\` and
+   the DOP20 `.jpg` + `.jgw` files land in `data\raw\dop20\`. Flat layout — no
+   subdirectories per tile.
+
+Sanity check before going further:
+
+```powershell
+# Should show 29 + 29 (one each of .tif/.tfw, .jpg/.jgw per tile)
+(Get-ChildItem data\raw\dgm1 -Filter *.tif).Count
+(Get-ChildItem data\raw\dop20 -Filter *.jpg).Count
+```
+
+### 2. Mosaic + recenter to local meters
+
+```powershell
+.venv\Scripts\python.exe tools\prep_rasters.py
+```
+
+`prep_rasters.py` derives the bbox from whatever DGM1 tiles it finds, mosaics
+DGM1 + DOP20 onto that bbox, drops the NIR channel of the ortho, and caps the
+long texture axis at 16 384 px (the D3D12 / Omniverse RTX limit). Output:
+`data\prep\dem.tif`, `data\prep\ortho.png`, `data\prep\origin.json`.
+
+### 3. Build the USD (and .usdz)
+
+```powershell
+.venv\Scripts\python.exe -m messelpit.build_usd --usdz
+```
+
+Output: `out\messel.usd` + `out\ortho.png` (and `out\messel.usdz` if `--usdz`).
+
 For first iteration on a slow machine, decimate the mesh:
+
 ```powershell
 .venv\Scripts\python.exe -m messelpit.build_usd --decimate 4
 ```
