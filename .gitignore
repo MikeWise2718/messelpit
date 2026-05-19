@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+data/*
+!data/tile_manifest.txt
+out/
+.uv-cache/
+*.egg-info/
+dist/
+build/

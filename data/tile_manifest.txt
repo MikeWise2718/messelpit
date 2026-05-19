@@ -1,0 +1,79 @@
+# Messel Pit — HVBG tile manifest
+#
+# Tiles required to reproduce the current build. Download from the HVBG
+# Geodaten-online shop (see tools/download_messel_data.py for URLs) and
+# unzip into data/raw/dgm1/ and data/raw/dop20/. prep_rasters.py derives
+# the bbox from whatever DGM1 tiles it finds, so the exact list here
+# defines the coverage.
+#
+# Naming: <dataset>_32_<E_km>_<N_km>_1_he.<ext>
+#   32   = UTM zone 32N (EPSG:25832)
+#   E_km = SW corner easting in km
+#   N_km = SW corner northing in km
+#   1    = tile edge length in km
+#   he   = Hessen
+#
+# Coverage: 29 tiles, irregular footprint roughly
+#   480 000 .. 486 000 E  ×  5 526 000 .. 5 535 000 N
+
+# --- DGM1 (1 m DEM, GeoTIFF + .tfw world file) ---
+dgm1_32_480_5531_1_he.tif
+dgm1_32_480_5532_1_he.tif
+dgm1_32_480_5533_1_he.tif
+dgm1_32_481_5527_1_he.tif
+dgm1_32_481_5528_1_he.tif
+dgm1_32_481_5529_1_he.tif
+dgm1_32_481_5530_1_he.tif
+dgm1_32_481_5531_1_he.tif
+dgm1_32_481_5532_1_he.tif
+dgm1_32_481_5533_1_he.tif
+dgm1_32_481_5534_1_he.tif
+dgm1_32_482_5526_1_he.tif
+dgm1_32_482_5527_1_he.tif
+dgm1_32_482_5528_1_he.tif
+dgm1_32_482_5529_1_he.tif
+dgm1_32_482_5530_1_he.tif
+dgm1_32_482_5531_1_he.tif
+dgm1_32_482_5532_1_he.tif
+dgm1_32_482_5533_1_he.tif
+dgm1_32_483_5527_1_he.tif
+dgm1_32_483_5528_1_he.tif
+dgm1_32_483_5529_1_he.tif
+dgm1_32_483_5530_1_he.tif
+dgm1_32_483_5531_1_he.tif
+dgm1_32_483_5532_1_he.tif
+dgm1_32_484_5530_1_he.tif
+dgm1_32_484_5531_1_he.tif
+dgm1_32_484_5532_1_he.tif
+dgm1_32_485_5532_1_he.tif
+
+# --- DOP20 (0.2 m RGBI orthophoto, JPEG + .jgw world file) ---
+dop20_32_480_5531_1_he.jpg
+dop20_32_480_5532_1_he.jpg
+dop20_32_480_5533_1_he.jpg
+dop20_32_481_5527_1_he.jpg
+dop20_32_481_5528_1_he.jpg
+dop20_32_481_5529_1_he.jpg
+dop20_32_481_5530_1_he.jpg
+dop20_32_481_5531_1_he.jpg
+dop20_32_481_5532_1_he.jpg
+dop20_32_481_5533_1_he.jpg
+dop20_32_481_5534_1_he.jpg
+dop20_32_482_5526_1_he.jpg
+dop20_32_482_5527_1_he.jpg
+dop20_32_482_5528_1_he.jpg
+dop20_32_482_5529_1_he.jpg
+dop20_32_482_5530_1_he.jpg
+dop20_32_482_5531_1_he.jpg
+dop20_32_482_5532_1_he.jpg
+dop20_32_482_5533_1_he.jpg
+dop20_32_483_5527_1_he.jpg
+dop20_32_483_5528_1_he.jpg
+dop20_32_483_5529_1_he.jpg
+dop20_32_483_5530_1_he.jpg
+dop20_32_483_5531_1_he.jpg
+dop20_32_483_5532_1_he.jpg
+dop20_32_484_5530_1_he.jpg
+dop20_32_484_5531_1_he.jpg
+dop20_32_484_5532_1_he.jpg
+dop20_32_485_5532_1_he.jpg
