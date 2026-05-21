@@ -22,7 +22,7 @@ application that loads it lives in the sibling repo.
 ## Sibling repo
 
 ```
-D:\senckenberg\
+C:\Messel_Project\
 ├── messelpit\          ← you are here (data pipeline, Python/uv)
 │   └── out\messel.usd  ← what this repo produces
 └── messelpit_viewer\   ← NVIDIA Omniverse Kit app (vendored kit-app-template)
