@@ -142,7 +142,10 @@ def main() -> None:
     console = Console()
     args.out.parent.mkdir(parents=True, exist_ok=True)
 
-    dem_path = args.prep_dir / "dem.tif"
+    smooth_path = Path("vegetation_troubleshooting/dem_smooth.tif")
+    dem_path = smooth_path if smooth_path.exists() else args.prep_dir / "dem.tif"
+    if smooth_path.exists():
+        console.print(f"[cyan]Using smoothed DEM:[/cyan] {smooth_path}")
     ortho_path = args.prep_dir / "ortho.png"
     origin_path = args.prep_dir / "origin.json"
     for p in (dem_path, ortho_path, origin_path):

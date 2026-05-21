@@ -128,7 +128,7 @@ def prep_dem(raw_dir: Path, out_dir: Path, bbox, console: Console) -> dict:
         dst.write(band.astype("float32"), 1)
     console.print(
         f"[green]wrote[/green] {dem_path}  ({band.shape[1]}x{band.shape[0]}, "
-        f"z ∈ [{stats['min']:.1f}, {stats['max']:.1f}] m)")
+        f"z=[{stats['min']:.1f}, {stats['max']:.1f}] m)")
     return stats
 
 
@@ -168,7 +168,7 @@ def prep_ortho(raw_dir: Path, out_dir: Path, bbox, ortho_res_m: float,
         effective_res = ortho_res_m * long_dim / max_tex_dim
         console.print(
             f"[yellow]capping[/yellow] ortho at max_tex_dim={max_tex_dim}: "
-            f"{target_w}x{target_h} → {new_w}x{new_h} "
+            f"{target_w}x{target_h} -> {new_w}x{new_h} "
             f"(effective res {effective_res:.2f} m/px)")
         target_w, target_h = new_w, new_h
 
@@ -194,6 +194,13 @@ def main() -> None:
                              "Ortho is scaled down proportionally if exceeded.")
     parser.add_argument("--skip-ortho", action="store_true",
                         help="Only build the DEM (faster while iterating).")
+    parser.add_argument("--bbox", type=float, nargs=4,
+                        metavar=("XMIN", "YMIN", "XMAX", "YMAX"),
+                        help="Crop to this UTM 32N bbox in metres instead of the "
+                             "full tile extent. Example: --bbox 481700 5528100 483000 5529800")
+    parser.add_argument("--pit", action="store_true",
+                        help="Shortcut: crop to Messel Pit + 300 m buffer "
+                             "(481700 5528100 483000 5529800).")
     args = parser.parse_args()
 
     console = Console()
@@ -202,22 +209,33 @@ def main() -> None:
     dgm1_tiles = _list_tiles(args.raw_dir / "dgm1", (".tif", ".tiff"))
     if not dgm1_tiles:
         raise FileNotFoundError(f"No DGM1 tiles in {args.raw_dir / 'dgm1'}")
-    bbox = _bbox_from_tile_names(dgm1_tiles)
+
+    if args.pit:
+        bbox = (481_700, 5_528_100, 483_000, 5_529_800)
+    elif args.bbox:
+        bbox = tuple(args.bbox)
+    else:
+        bbox = _bbox_from_tile_names(dgm1_tiles)
     console.print(
         f"[cyan]Mosaic bbox (UTM 32N):[/cyan] "
-        f"{bbox[0]:,}..{bbox[2]:,} E  ×  {bbox[1]:,}..{bbox[3]:,} N  "
-        f"= {bbox[2]-bbox[0]:,} × {bbox[3]-bbox[1]:,} m")
+        f"{bbox[0]:,}..{bbox[2]:,} E  x  {bbox[1]:,}..{bbox[3]:,} N  "
+        f"= {bbox[2]-bbox[0]:,} x {bbox[3]-bbox[1]:,} m")
 
     with Progress(SpinnerColumn(), TextColumn("{task.description}"), console=console) as p:
-        t = p.add_task("Building DEM mosaic…", total=None)
+        t = p.add_task("Building DEM mosaic...", total=None)
         stats = prep_dem(args.raw_dir, args.out_dir, bbox, console)
         p.remove_task(t)
         ortho_dims = None
         if not args.skip_ortho:
-            t = p.add_task("Building orthophoto mosaic…", total=None)
+            t = p.add_task("Building orthophoto mosaic...", total=None)
             ortho_dims = prep_ortho(args.raw_dir, args.out_dir, bbox,
                                     args.ortho_res, args.max_tex_dim, console)
             p.remove_task(t)
+            veg_dir = Path("vegetation_troubleshooting")
+            if veg_dir.exists():
+                import shutil
+                shutil.copy2(args.out_dir / "ortho.png", veg_dir / "ortho.png")
+                console.print(f"[cyan]copied[/cyan] ortho.png -> {veg_dir / 'ortho.png'}")
 
     origin = {
         "utm_zone": "32N", "epsg": 25832,

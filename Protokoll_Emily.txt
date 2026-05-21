@@ -1,0 +1,93 @@
+Protokoll_Emily.txt
+===================
+Arbeitsprotokoll — Messel Pit USD Pipeline
+Repo: C:\Messel_Project\messelpit  (branch: emily_branch)
+
+Alle Timestamps: YYYY-MM-DD HH:MM (Europe/Berlin)
+"We" = Mike Wise + Claude (AI assistant)
+
+---
+
+2026-05-21
+----------
+
+[2026-05-21 16:00] Opened messel_med.usd in Omniverse Kit viewer via
+                   C:\Messel_Project\messelpit_viewer\launch.bat
+
+[2026-05-21 16:05] Created CLAUDE_readme.md in repo root — quick reference for
+                   Claude sessions: correct paths (C:\Messel_Project\, not D:\senckenberg\),
+                   how to launch Omniverse, git rules (no merging ever).
+
+[2026-05-21 16:10] Fixed incorrect sibling repo path in CLAUDE.md on emily_branch:
+                   D:\senckenberg\ -> C:\Messel_Project\
+                   Committed to emily_branch (commit ef5205c).
+
+[2026-05-21 16:15] Discussed problem: DGM1 terrain has bumps where trees are because
+                   LiDAR hits canopy tops. Confirmed DGM1 is supposed to be bare-earth
+                   (ground-classified), so bumps are classification errors in HVBG data.
+
+[2026-05-21 16:20] Decided on approach to fix tree bumps:
+                   Step 1 — auto-detect vegetation from DOP20 NIR band (NDVI threshold)
+                   Step 2 — user manually edits mask in GIMP/Photoshop
+                   Step 3 — interpolate DEM under masked areas (nearest-neighbour fill)
+
+[2026-05-21 16:30] Created tools/make_veg_mask.py — generates white/black vegetation
+                   mask PNG from DOP20 RGBI band 4 (NIR) using NDVI. Output: data/prep/veg_mask.png.
+                   White = vegetation / smooth here. Configurable threshold + dilation.
+
+[2026-05-21 16:35] Created tools/smooth_dem.py — reads dem.tif + veg_mask.png,
+                   interpolates elevation under white mask pixels using nearest-neighbour
+                   fill, writes data/prep/dem_smooth.tif.
+
+[2026-05-21 16:40] Updated src/messelpit/build_usd.py to automatically prefer
+                   dem_smooth.tif over dem.tif if it exists.
+
+[2026-05-21 16:45] Workflow for tree-bump fix established:
+                   1. uv run tools/prep_rasters.py
+                   2. uv run tools/make_veg_mask.py
+                   3. Edit data/prep/veg_mask.png in GIMP (white=smooth, black=keep)
+                   4. uv run tools/smooth_dem.py
+                   5. uv run src/messelpit/build_usd.py  (picks up dem_smooth.tif automatically)
+
+[2026-05-21 16:51] Created Protokoll_Emily.txt (this file) and opened it.
+
+[2026-05-21 16:55] Ran step 1: tools/prep_rasters.py (full 6x9 km area).
+                   Output: data/prep/dem.tif (6000x9000), data/prep/ortho.png (10922x16384).
+
+[2026-05-21 17:00] Ran step 2: tools/make_veg_mask.py. DOP20 tiles only have 3 bands (RGB,
+                   no NIR) — fell back to greenness index. 17.4% vegetation detected after dilation.
+                   Output: data/prep/veg_mask.png.
+
+[2026-05-21 17:05] Decided to crop pipeline to just the Messel Pit + buffer instead of full
+                   6x9 km. Pit center: UTM 32N E 482350, N 5528959. Pit ~1000x700 m.
+
+[2026-05-21 17:10] Added --bbox and --pit flags to tools/prep_rasters.py for custom crop areas.
+
+[2026-05-21 17:15] Iterated bbox through several runs to find correct extent — adjusted north,
+                   south, east boundaries based on visual inspection of ortho.png in image viewer.
+                   Final bbox: 481700 5528400 483800 5530900 (2100x2500 m, ~2.1x2.5 km).
+                   Output: data/prep/dem.tif (2100x2500), data/prep/ortho.png (4200x5000).
+
+[2026-05-21 17:25] Created vegetation_troubleshooting/ folder in repo root.
+                   Updated make_veg_mask.py and smooth_dem.py to default outputs there.
+                   Updated build_usd.py to look for dem_smooth.tif there.
+                   Updated prep_rasters.py to auto-copy ortho.png there on each run.
+
+[2026-05-21 17:30] Copied make_veg_mask.py and smooth_dem.py into vegetation_troubleshooting/
+                   for reference alongside the output files.
+
+[2026-05-21 17:38] Plan for next session: open ortho.png + veg_mask.png in Krita, overlay them,
+                   manually paint missing trees white on the mask layer. Export edited mask back
+                   as vegetation_troubleshooting/veg_mask.png, then run smooth_dem.py.
+
+[2026-05-21 17:45] Fixed size mismatch between ortho.png and veg_mask.png — ortho was 4200x5000
+                   (0.5 m/px) and mask was 2100x2500 (1 m/px). Updated make_veg_mask.py to read
+                   ortho dimensions from origin.json and resize mask to match. Both now 4200x5000.
+
+[2026-05-21 18:16] Session end. Files ready in vegetation_troubleshooting/ for Krita editing:
+                   - ortho.png (4200x5000, colour reference)
+                   - veg_mask.png (4200x5000, auto-generated, needs manual tree painting)
+                   Next step: open both in Krita, paint missing trees white on mask layer,
+                   export mask, then run smooth_dem.py.
+
+---
