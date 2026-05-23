@@ -136,4 +136,10 @@ Alle Timestamps: YYYY-MM-DD HH:MM (Europe/Berlin)
                    already exists, next build writes messel_v01.usd, messel_v02.usd,
                    etc. rather than overwriting. No existing files were lost.
 
+[2026-05-23 14:50] Reverted auto-increment versioning from build_usd.py.
+                   Instead: added prominent warning to CLAUDE_readme.md instructing
+                   Claude to ask Mike before every USD overwrite:
+                   "Do you want me to save a versioned copy before I overwrite it?"
+                   Warning surrounded by 4 rows of stars top and bottom for visibility.
+
 ---
