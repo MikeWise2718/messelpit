@@ -91,3 +91,26 @@ Alle Timestamps: YYYY-MM-DD HH:MM (Europe/Berlin)
                    export mask, then run smooth_dem.py.
 
 ---
+
+2026-05-23
+----------
+
+[2026-05-23 12:10] Started session. Tested hand-painted vegetation mask (veg_mask_hp.png)
+                   by running smooth_dem.py with it and rebuilding messel_med.usd.
+                   Launched two Kit instances side-by-side (messel_med_before.usd vs
+                   messel_med.usd) for before/after comparison via MESSEL_USD env var.
+
+[2026-05-23 12:30] Created tools/combine_veg_masks.py — combines auto-generated and
+                   hand-painted vegetation masks. Learned that missed trees have median
+                   greenness 0.078 (below auto-threshold 0.15), meaning they are
+                   spectrally indistinguishable from roads/buildings. Script falls back
+                   to plain OR of both masks in that case. Combined coverage: 18.91%.
+
+[2026-05-23 12:45] Ran full pipeline with combined mask:
+                   smooth_dem.py → dem_smooth.tif (18.9% masked)
+                   build_usd.py -d 4 → messel_med.usd (combined mask, smoothed)
+                   build_usd.py -d 1 → messel.usd (full-res, 5.25M verts, smoothed)
+                   Launched existing pre-smoothing messel.usd in Kit for quality viewing.
+                   Smoothed full-res messel.usd ready for reload.
+
+---
