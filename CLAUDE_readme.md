@@ -128,9 +128,14 @@ Old full-area `messel.usd` (~108M tris) crashes Kit after ~30s — do not use.
 - Found greenness alone gives only 18% coverage (no NIR, many trees spectrally
   ambiguous). Hand-painted missed pixels have median greenness 0.078 < threshold 0.15.
 - Added height-anomaly detection to `make_veg_mask.py` — DEM bump detection is
-  more accurate than colour for this dataset
-- Rebuilt `messel.usd` (pit bbox, d=1, smoothed) — 10.5M tris, stable in Kit
+  more accurate than colour for this dataset. Combined coverage ~60%.
+- Rewrote `smooth_dem.py`: replaced nearest-neighbour fill (caused Voronoi seams)
+  with Gaussian blur of original DEM + inward-only distance-transform feather.
+  Bare ground preserved exactly (MAE 0.002m). Inside mask MAE 0.38m.
+- Iteratively trimmed bbox to final: `481700 5528740 483460 5530610` (1760×1870m)
+- Saved `out/messel_smooth_veg.usd` and `out/messel_veg_mask_01.usd` as named versions
 - Full-area `messel.usd` (108M tris) confirmed to crash Kit as documented
+- Added `*.kra` to `.gitignore`; pushed all session commits to emily_branch on GitHub
 
 ## Notes
 

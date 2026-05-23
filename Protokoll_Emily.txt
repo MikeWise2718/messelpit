@@ -171,4 +171,14 @@ Alle Timestamps: YYYY-MM-DD HH:MM (Europe/Berlin)
                      outside mask MAE=0.002m (bare ground preserved exactly)
                    Updated CLAUDE_readme.md with current bbox.
 
+[2026-05-23 16:10] Discussed whether re-running pipeline from scratch would improve
+                   results — answer: no, pipeline is stateless per bbox run. Only
+                   way to improve further is more hand-painting or better algorithms.
+
+[2026-05-23 16:20] Committed all pending files to emily_branch and pushed to GitHub:
+                   - uv.lock, veg_mask_hp.png, veg_mask_combined.png, veg_mask.png,
+                     ortho.png (vegetation_troubleshooting/)
+                   - Added *.kra and *.kra~ to .gitignore (Krita files too large for git)
+                   - All session commits pushed (ec0bb92). Branch now up to date.
+
 ---
