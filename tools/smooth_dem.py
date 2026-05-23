@@ -35,6 +35,10 @@ def main() -> None:
     parser.add_argument("--blur", type=float, default=0.0,
                         help="Optional Gaussian blur sigma (metres) applied after "
                              "interpolation to further smooth the filled area (default 0 = off).")
+    parser.add_argument("--feather", type=float, default=10.0,
+                        help="Width in metres over which the filled DEM is blended back "
+                             "into the original at mask edges (default 10). "
+                             "Eliminates jagged boundary artefacts. Set 0 to disable.")
     args = parser.parse_args()
 
     console = Console()
@@ -77,9 +81,18 @@ def main() -> None:
 
         if args.blur > 0:
             from scipy.ndimage import gaussian_filter
-            # Only blur the filled region (blend with original at edges)
             blurred = gaussian_filter(smooth, sigma=args.blur)
             smooth = np.where(veg, blurred, dem)
+
+        if args.feather > 0:
+            # Distance (in pixels) from each masked pixel to the nearest unmasked pixel.
+            # At the mask edge this is 0; deep inside the mask it grows large.
+            dist_to_edge = distance_transform_edt(veg)
+            # Weight: 0 at edge → 1 at feather distance and beyond.
+            # Outside the mask weight is 0 so original DEM is kept exactly.
+            weight = np.clip(dist_to_edge / args.feather, 0.0, 1.0).astype("float32")
+            smooth = dem * (1.0 - weight) + smooth * weight
+            console.print(f"[cyan]Feather:[/cyan] {args.feather} m blend zone at mask edges")
 
     profile.update(dtype="float32", compress="lzw", tiled=True,
                    blockxsize=256, blockysize=256)
