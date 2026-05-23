@@ -127,4 +127,13 @@ Alle Timestamps: YYYY-MM-DD HH:MM (Europe/Berlin)
                    lower greenness threshold (0.08) and hand-painted mask, target
                    coverage ~40-60%. Implementing now.
 
+[2026-05-23 14:35] Ran improved make_veg_mask.py (threshold 0.08, dilate 1, ha enabled).
+                   Result: 38.5% colour + 7.1% height anomaly = 43.0% pre-dilation,
+                   62.7% after dilation. Combined with hand-painted: 62.8%.
+                   Rebuilt messel.usd (full-res, pit bbox) with new combined mask.
+
+[2026-05-23 14:40] Added auto-increment versioning to build_usd.py — if output file
+                   already exists, next build writes messel_v01.usd, messel_v02.usd,
+                   etc. rather than overwriting. No existing files were lost.
+
 ---
