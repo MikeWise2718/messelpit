@@ -74,8 +74,9 @@ by the auto-detection, export mask back to `vegetation_troubleshooting/veg_mask.
 Then run `uv run tools/smooth_dem.py` to produce `dem_smooth.tif`.
 `build_usd.py` picks up `dem_smooth.tif` automatically.
 
-Pit-only bbox (UTM 32N): `481700 5528400 483800 5530900` — use `--pit` shortcut or
-`--bbox 481700 5528400 483800 5530900` with prep_rasters.py.
+Pit-only bbox (UTM 32N): `481700 5528740 483460 5530610` (1760×1870m) — use
+`--bbox 481700 5528740 483460 5530610` with prep_rasters.py.
+(Original 2.1×2.5km bbox was `481700 5528400 483800 5530900` — superseded 2026-05-23.)
 
 ## Vegetation mask pipeline (current best practice)
 
@@ -113,7 +114,7 @@ Old full-area `messel.usd` (~108M tris) crashes Kit after ~30s — do not use.
 - Updated `tools/prep_rasters.py` with `--bbox` and `--pit` flags for pit-only crop
 - Updated `src/messelpit/build_usd.py` to auto-use `dem_smooth.tif` if present
 - Created `vegetation_troubleshooting/` folder with ortho, mask, and tool copies
-- Final pit bbox: `481700 5528400 483800 5530900` (~2.1×2.5 km)
+- Final pit bbox at time: `481700 5528400 483800 5530900` (~2.1×2.5 km) — later trimmed, see 2026-05-23 recap
 - DOP20 tiles are RGB only (no NIR) — mask uses greenness index as fallback
 - Next step: user edits `veg_mask.png` in Krita, then runs `smooth_dem.py`
 - All committed and pushed to `emily_branch` on GitHub

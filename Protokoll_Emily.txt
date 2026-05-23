@@ -162,4 +162,13 @@ Alle Timestamps: YYYY-MM-DD HH:MM (Europe/Berlin)
                    smooth_dem (blur=50m, feather=30m inward) -> build d=1.
                    Saved as out/messel_veg_mask_01.usd (4.6M verts, 9.2M tris).
 
+[2026-05-23 16:00] Further trimmed bbox to exclude highway on north and excess edges:
+                   - 40m more south, east, north from previous
+                   final bbox: 481700 5528740 483460 5530610 (1760x1870m, UTM 32N)
+                   Re-ran full pipeline. Rebuilt messel_veg_mask_01.usd.
+                   Accuracy stats for final bbox:
+                     inside mask  MAE=0.38m, RMSE=1.12m, max correction -19m..+2.4m
+                     outside mask MAE=0.002m (bare ground preserved exactly)
+                   Updated CLAUDE_readme.md with current bbox.
+
 ---
