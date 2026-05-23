@@ -1,20 +1,27 @@
-"""Generate a vegetation mask from the DOP20 NIR band (band 4).
+"""Generate a vegetation mask combining colour and DEM height-anomaly signals.
 
-Uses NDVI = (NIR - R) / (NIR + R) to isolate trees and vegetation.
-Output is a white-on-black PNG at DEM resolution (1 m/px):
+Two complementary detectors are computed and OR-ed together:
+
+1. Colour index (greenness or NDVI)
+   Uses NDVI = (NIR-R)/(NIR+R) when band 4 is available, otherwise falls back to
+   the greenness index (G-R)/(G+R). Catches well-lit, high-greenness canopy.
+
+2. Height anomaly (--ha-sigma / --ha-threshold flags)
+   Compares each DEM pixel to a Gaussian-smoothed version of the DEM. Pixels that
+   sit more than N metres above the local average are flagged as canopy hits. This
+   catches trees regardless of colour — useful for shadowed or low-greenness species.
+
+Output is a white-on-black PNG matched to ortho resolution:
   white = vegetation / canopy (will be interpolated in smooth_dem.py)
   black = bare ground / roads / buildings / water
 
-Edit the output in GIMP or Photoshop before running smooth_dem.py:
-  - Paint white over any extra bumps you want smoothed
-  - Paint black over false positives (rooftops, bright fields, etc.)
-
 Inputs:
   data/raw/dop20/          raw RGBI tiles
+  data/prep/dem.tif        DEM (written by prep_rasters.py) — for height anomaly
   data/prep/origin.json    bbox (written by prep_rasters.py)
 
 Output:
-  data/prep/veg_mask.png   white = smooth here, black = keep as-is
+  vegetation_troubleshooting/veg_mask.png
 """
 
 from __future__ import annotations
@@ -58,6 +65,14 @@ def main() -> None:
                              "(0–1, default 0.15). Lower = more vegetation detected.")
     parser.add_argument("--dilate", type=int, default=3,
                         help="Dilation radius in pixels to expand mask edges (default 3).")
+    parser.add_argument("--ha-sigma", type=float, default=30.0,
+                        help="Gaussian blur sigma in metres for height-anomaly baseline "
+                             "(default 30). Larger = smoother reference surface.")
+    parser.add_argument("--ha-threshold", type=float, default=1.5,
+                        help="Height above local average (metres) to flag as canopy "
+                             "(default 1.5). Lower = more sensitive.")
+    parser.add_argument("--no-height-anomaly", action="store_true",
+                        help="Disable height-anomaly detection (colour signal only).")
     args = parser.parse_args()
 
     console = Console()
@@ -115,9 +130,41 @@ def main() -> None:
                   f"{index.min():.3f} .. {index.max():.3f}  "
                   f"(threshold={args.threshold})")
 
-    mask = (index >= args.threshold).astype("uint8")
-    veg_frac = mask.mean() * 100
-    console.print(f"[cyan]Vegetation pixels:[/cyan] {veg_frac:.1f}%")
+    colour_mask = (index >= args.threshold).astype(bool)
+    console.print(f"[cyan]Colour mask ({index_name} >= {args.threshold}):[/cyan] "
+                  f"{colour_mask.mean()*100:.1f}%")
+
+    # --- height-anomaly detection ---
+    ha_mask = np.zeros_like(colour_mask, dtype=bool)
+    if not args.no_height_anomaly:
+        dem_path = args.prep_dir / "dem.tif"
+        if not dem_path.exists():
+            console.print(f"[yellow]Height anomaly skipped:[/yellow] {dem_path} not found")
+        else:
+            from scipy.ndimage import gaussian_filter
+            import rasterio as _rio
+            with _rio.open(dem_path) as _src:
+                dem = _src.read(1).astype("float32")
+                dem_res = _src.res[0]  # metres/pixel
+            sigma_px = args.ha_sigma / dem_res
+            dem_smooth = gaussian_filter(dem, sigma=sigma_px)
+            anomaly = dem - dem_smooth
+            ha_mask_dem = anomaly >= args.ha_threshold
+            # Resize ha_mask from DEM resolution to ortho resolution
+            ha_img = Image.fromarray(ha_mask_dem.astype("uint8") * 255, mode="L")
+            ha_img = ha_img.resize((out_w, out_h), Image.NEAREST)
+            ha_mask = np.array(ha_img) > 127
+            console.print(
+                f"[cyan]Height anomaly (>{args.ha_threshold}m above {args.ha_sigma}m smooth):[/cyan] "
+                f"{ha_mask_dem.mean()*100:.1f}% (DEM res)  "
+                f"{ha_mask.mean()*100:.1f}% (ortho res)")
+
+    # Resize colour mask to ortho resolution, then OR with height-anomaly mask
+    colour_img = Image.fromarray(colour_mask.astype("uint8") * 255, mode="L")
+    colour_img_out = colour_img.resize((out_w, out_h), Image.NEAREST)
+    colour_mask_out = np.array(colour_img_out) > 127
+    mask = (colour_mask_out | ha_mask).astype("uint8")
+    console.print(f"[cyan]Combined (colour OR height):[/cyan] {mask.mean()*100:.1f}%")
 
     if args.dilate > 0:
         from scipy.ndimage import binary_dilation
@@ -126,13 +173,9 @@ def main() -> None:
         console.print(f"[cyan]After dilation ({args.dilate}px):[/cyan] "
                       f"{mask.mean()*100:.1f}% vegetation")
 
-    # Resample to ortho resolution so mask overlays 1:1 in Krita
-    img_native = Image.fromarray(mask * 255, mode="L")
-    img_out = img_native.resize((out_w, out_h), Image.NEAREST)
-
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    img_out.save(out_path)
-    console.print(f"[green]wrote[/green] {out_path}  ({out_w}x{out_h} px)")
+    Image.fromarray(mask * 255, mode="L").save(out_path)
+    console.print(f"[green]wrote[/green] {out_path}  ({out_w}x{out_h} px, {mask.mean()*100:.1f}% white)")
     console.print(
         "\nEdit in GIMP/Photoshop: [white]=smooth here[/white], [black]=keep as-is"
         "\nThen run: [cyan]uv run tools/smooth_dem.py[/cyan]")

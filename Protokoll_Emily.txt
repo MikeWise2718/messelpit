@@ -113,4 +113,18 @@ Alle Timestamps: YYYY-MM-DD HH:MM (Europe/Berlin)
                    Launched existing pre-smoothing messel.usd in Kit for quality viewing.
                    Smoothed full-res messel.usd ready for reload.
 
+[2026-05-23 14:00] Confirmed full-area messel.usd (108M tris) crashes Kit after ~30s
+                   as documented. New pit-bbox messel.usd (10.5M tris) is stable.
+
+[2026-05-23 14:15] Observed combined mask only covers 18.9% of image — still too many
+                   visible vegetation bumps in Omniverse. Greenness index alone is not
+                   sufficient: DOP20 has no NIR, many tree pixels are spectrally
+                   ambiguous (median greenness 0.078 < threshold 0.15).
+
+[2026-05-23 14:30] Decision: add height-anomaly detection to make_veg_mask.py.
+                   Approach: compare DEM to Gaussian-smoothed DEM; flag pixels that
+                   sit significantly above local average (canopy hits). Combined with
+                   lower greenness threshold (0.08) and hand-painted mask, target
+                   coverage ~40-60%. Implementing now.
+
 ---
