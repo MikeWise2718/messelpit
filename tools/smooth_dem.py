@@ -35,7 +35,7 @@ def main() -> None:
     parser.add_argument("--blur", type=float, default=0.0,
                         help="Optional Gaussian blur sigma (metres) applied after "
                              "interpolation to further smooth the filled area (default 0 = off).")
-    parser.add_argument("--feather", type=float, default=10.0,
+    parser.add_argument("--feather", type=float, default=30.0,
                         help="Width in metres over which the filled DEM is blended back "
                              "into the original at mask edges (default 10). "
                              "Eliminates jagged boundary artefacts. Set 0 to disable.")
@@ -71,28 +71,24 @@ def main() -> None:
         console.print("[yellow]Mask is empty — nothing to smooth. Copying DEM as-is.[/yellow]")
         smooth = dem.copy()
     else:
-        # Nearest-neighbour fill: each masked pixel gets the value of
-        # the nearest unmasked pixel. Fast and works well for sparse masks.
-        # For large contiguous forests this gives a planar-ish fill — good enough.
-        unknown = veg.copy()
-        _, (iy, ix) = distance_transform_edt(unknown, return_indices=True)
-        smooth = dem.copy()
-        smooth[veg] = dem[iy[veg], ix[veg]]
+        from scipy.ndimage import gaussian_filter
 
-        if args.blur > 0:
-            from scipy.ndimage import gaussian_filter
-            blurred = gaussian_filter(smooth, sigma=args.blur)
-            smooth = np.where(veg, blurred, dem)
+        # Gaussian-blur the entire DEM — this suppresses tree-bump spikes while
+        # preserving large-scale terrain shape (valleys, ridges). No fill needed:
+        # masked pixels already have elevation values, they just need smoothing.
+        blur_sigma = args.blur if args.blur > 0 else 30.0
+        dem_blurred = gaussian_filter(dem, sigma=blur_sigma)
+        console.print(f"[cyan]DEM blur:[/cyan] Gaussian sigma={blur_sigma} m")
 
-        if args.feather > 0:
-            # Distance (in pixels) from each masked pixel to the nearest unmasked pixel.
-            # At the mask edge this is 0; deep inside the mask it grows large.
-            dist_to_edge = distance_transform_edt(veg)
-            # Weight: 0 at edge → 1 at feather distance and beyond.
-            # Outside the mask weight is 0 so original DEM is kept exactly.
-            weight = np.clip(dist_to_edge / args.feather, 0.0, 1.0).astype("float32")
-            smooth = dem * (1.0 - weight) + smooth * weight
-            console.print(f"[cyan]Feather:[/cyan] {args.feather} m blend zone at mask edges")
+        # Soft mask: Gaussian-blur the binary mask to create a 0..1 blend weight.
+        # This feathers the transition so there is no hard edge between smoothed
+        # and original terrain.
+        feather_sigma = args.feather if args.feather > 0 else 30.0
+        soft_mask = gaussian_filter(veg.astype("float32"), sigma=feather_sigma)
+        console.print(f"[cyan]Feather:[/cyan] Gaussian blend, sigma={feather_sigma} m")
+
+        # Blend: outside mask → original DEM; inside mask → blurred DEM; smooth transition.
+        smooth = dem * (1.0 - soft_mask) + dem_blurred * soft_mask
 
     profile.update(dtype="float32", compress="lzw", tiled=True,
                    blockxsize=256, blockysize=256)

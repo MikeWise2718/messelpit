@@ -142,4 +142,12 @@ Alle Timestamps: YYYY-MM-DD HH:MM (Europe/Berlin)
                    "Do you want me to save a versioned copy before I overwrite it?"
                    Warning surrounded by 4 rows of stars top and bottom for visibility.
 
+[2026-05-23 14:55] Investigated jagged edges at vegetation mask boundaries.
+                   Root cause: nearest-neighbour fill on 62.8% masked area creates
+                   Voronoi-like flat plateaus with hard seams. Rewrote smooth_dem.py:
+                   new approach Gaussian-blurs the original DEM directly (no fill),
+                   then blends blurred↔original via a soft Gaussian mask weight.
+                   Parameters: --blur 50m, --feather 30m. Result: smooth transitions,
+                   no seams. Saved as out/messel_smooth_veg.usd.
+
 ---
