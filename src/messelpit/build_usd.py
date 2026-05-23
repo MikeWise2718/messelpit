@@ -24,18 +24,6 @@ from rich_argparse import RichHelpFormatter
 from messelpit import __version__
 
 
-def next_versioned_path(path: Path) -> Path:
-    """If path exists, return path.stem + _vNN + suffix with the next free N."""
-    if not path.exists():
-        return path
-    n = 1
-    while True:
-        candidate = path.with_stem(f"{path.stem}_v{n:02d}")
-        if not candidate.exists():
-            return candidate
-        n += 1
-
-
 def build_grid_mesh(dem: np.ndarray, res_m: float, decimate: int):
     """Return (points, face_vertex_counts, face_vertex_indices, uvs) for a DEM grid."""
     if decimate > 1:
@@ -152,7 +140,6 @@ def main() -> None:
     args = parser.parse_args()
 
     console = Console()
-    args.out = next_versioned_path(args.out)
     args.out.parent.mkdir(parents=True, exist_ok=True)
 
     smooth_path = Path("vegetation_troubleshooting/dem_smooth.tif")

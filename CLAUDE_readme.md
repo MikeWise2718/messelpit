@@ -1,5 +1,10 @@
 # CLAUDE_readme — Quick Reference for Claude Sessions
 
+> <span style="color:red">**⚠️ VERSION MANAGEMENT — READ BEFORE EVERY BUILD**
+> Before rebuilding any USD file (messel.usd, messel_med.usd, etc.),
+> ask Mike: "Do you want me to save a versioned copy of the existing file before I overwrite it?"
+> Do this EVERY TIME without exception.</span>
+
 ## "Open the project" / "Open in Omniverse"
 
 Run this:
