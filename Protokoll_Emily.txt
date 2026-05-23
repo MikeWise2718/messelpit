@@ -150,4 +150,16 @@ Alle Timestamps: YYYY-MM-DD HH:MM (Europe/Berlin)
                    Parameters: --blur 50m, --feather 30m. Result: smooth transitions,
                    no seams. Saved as out/messel_smooth_veg.usd.
 
+[2026-05-23 15:20] Measured accuracy vs original LiDAR: inside mask MAE=0.95m,
+                   outside mask MAE=0.47m (bleeding from Gaussian feather).
+                   Fixed feathering to be inward-only (distance transform inside mask),
+                   so bare ground is now unchanged exactly.
+
+[2026-05-23 15:30] Trimmed bbox 100m on north, east, south:
+                   old: 481700 5528400 483800 5530900 (2100x2500m)
+                   new: 481700 5528500 483700 5530800 (2000x2300m)
+                   Re-ran full pipeline: prep_rasters -> make_veg_mask -> combine ->
+                   smooth_dem (blur=50m, feather=30m inward) -> build d=1.
+                   Saved as out/messel_veg_mask_01.usd (4.6M verts, 9.2M tris).
+
 ---

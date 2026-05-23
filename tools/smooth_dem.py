@@ -80,15 +80,16 @@ def main() -> None:
         dem_blurred = gaussian_filter(dem, sigma=blur_sigma)
         console.print(f"[cyan]DEM blur:[/cyan] Gaussian sigma={blur_sigma} m")
 
-        # Soft mask: Gaussian-blur the binary mask to create a 0..1 blend weight.
-        # This feathers the transition so there is no hard edge between smoothed
-        # and original terrain.
+        # Inward-only feather: distance from each masked pixel to the nearest
+        # unmasked pixel. Weight goes 0 (at edge) → 1 (feather metres inside).
+        # Outside the mask weight is exactly 0 so bare ground is never touched.
         feather_sigma = args.feather if args.feather > 0 else 30.0
-        soft_mask = gaussian_filter(veg.astype("float32"), sigma=feather_sigma)
-        console.print(f"[cyan]Feather:[/cyan] Gaussian blend, sigma={feather_sigma} m")
+        dist_inside = distance_transform_edt(veg)
+        weight = np.clip(dist_inside / feather_sigma, 0.0, 1.0).astype("float32")
+        console.print(f"[cyan]Feather:[/cyan] inward-only, {feather_sigma} m ramp")
 
-        # Blend: outside mask → original DEM; inside mask → blurred DEM; smooth transition.
-        smooth = dem * (1.0 - soft_mask) + dem_blurred * soft_mask
+        # Blend: outside mask → original DEM exactly; inside mask → blurred DEM.
+        smooth = dem * (1.0 - weight) + dem_blurred * weight
 
     profile.update(dtype="float32", compress="lzw", tiled=True,
                    blockxsize=256, blockysize=256)
