@@ -8,3 +8,5 @@ out/
 *.egg-info/
 dist/
 build/
+*.kra
+*.kra~
