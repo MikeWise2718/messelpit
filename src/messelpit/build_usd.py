@@ -18,7 +18,7 @@ from pathlib import Path
 import numpy as np
 import rasterio
 from PIL import Image
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdShade, UsdUtils, Vt
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade, UsdUtils, Vt
 from rich.console import Console
 from rich.table import Table
 from rich_argparse import RichHelpFormatter
@@ -127,6 +127,18 @@ def author_stage(out_path: Path, dem: np.ndarray, res_m: float,
         tex.ConnectableAPI(), "rgb")
     material.CreateSurfaceOutput().ConnectToSource(pbr.ConnectableAPI(), "surface")
     UsdShade.MaterialBindingAPI.Apply(mesh.GetPrim()).Bind(material)
+
+    # Collision schema for downstream physics use. Kit's XR teleport tool
+    # turns out NOT to use UsdPhysics (it uses the scene-pickable raycast,
+    # the same one selection uses), so this doesn't affect teleport
+    # behavior. Kept anyway because it costs nothing and unlocks future
+    # work: rolling-ball demos, character-controller terrain following,
+    # dropping objects onto the surface. MeshCollisionAPI with
+    # approximation "none" uses the render mesh directly as the collider
+    # -- exact for surface intersection, fine for our triangle counts.
+    UsdPhysics.CollisionAPI.Apply(mesh.GetPrim())
+    mesh_coll = UsdPhysics.MeshCollisionAPI.Apply(mesh.GetPrim())
+    mesh_coll.CreateApproximationAttr().Set(UsdPhysics.Tokens.none)
 
     stage.GetRootLayer().Save()
     console.print(f"[green]wrote[/green] {out_path}")
