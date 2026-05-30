@@ -12,16 +12,23 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
+import tempfile
 from pathlib import Path
 
 import numpy as np
 import rasterio
+from PIL import Image
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdShade, UsdUtils, Vt
 from rich.console import Console
 from rich.table import Table
 from rich_argparse import RichHelpFormatter
 
 from messelpit import __version__
+
+# The prepped ortho is up to 16384 px on the long axis; PIL's default
+# decompression-bomb guard fires below that. Disable it: we're reading
+# our own file, not arbitrary user input.
+Image.MAX_IMAGE_PIXELS = None
 
 
 def build_grid_mesh(dem: np.ndarray, res_m: float, decimate: int):
@@ -125,6 +132,85 @@ def author_stage(out_path: Path, dem: np.ndarray, res_m: float,
     console.print(f"[green]wrote[/green] {out_path}")
 
 
+def _prep_texture_for_usdz(
+    src_png: Path,
+    out_dir: Path,
+    fmt: str,
+    quality: int,
+    max_dim: int | None,
+    console: Console,
+) -> Path:
+    """Produce the texture file that goes inside the usdz.
+
+    For fmt="png" with no resize, just returns src_png (zero-copy).
+    Otherwise loads, optionally resizes (Lanczos), and writes a JPEG (or PNG)
+    into out_dir under a deterministic name. Returns the path to the result.
+    """
+    if fmt == "png" and (max_dim is None or max(Image.open(src_png).size) <= max_dim):
+        return src_png
+
+    img = Image.open(src_png)
+    long_axis = max(img.size)
+    if max_dim is not None and long_axis > max_dim:
+        scale = max_dim / long_axis
+        new_size = (int(img.size[0] * scale), int(img.size[1] * scale))
+        console.print(f"Resizing ortho {img.size} → {new_size} (Lanczos)")
+        img = img.resize(new_size, Image.LANCZOS)
+
+    ext = "jpg" if fmt == "jpeg" else "png"
+    out_path = out_dir / f"ortho.{ext}"
+    save_kwargs = {"format": "JPEG", "quality": quality} if fmt == "jpeg" else {"format": "PNG"}
+    img.save(out_path, **save_kwargs)
+    sz_mb = out_path.stat().st_size / (1024 * 1024)
+    console.print(f"Wrote {fmt.upper()} texture: {out_path.name} ({sz_mb:.1f} MB)")
+    return out_path
+
+
+def _build_usdz(
+    out_usd: Path,
+    usdz_path: Path,
+    dem: np.ndarray,
+    res_m: float,
+    origin_meta: dict,
+    decimate: int,
+    src_ortho: Path,
+    texture_format: str,
+    texture_quality: int,
+    texture_max_dim: int | None,
+    console: Console,
+) -> None:
+    """Author a shim .usd + texture in a temp dir, then bundle to .usdz.
+
+    Keeps the on-disk .usd (out_usd) and its PNG sibling untouched: a separate
+    tiny stage referencing the (possibly recompressed) texture is what gets
+    packaged. This way the desktop viewer's loose-file path stays on the
+    full-fidelity PNG while the .usdz can ship a smaller texture.
+    """
+    with tempfile.TemporaryDirectory(prefix="messel_usdz_") as tmp:
+        tmp_dir = Path(tmp)
+        tex_path = _prep_texture_for_usdz(
+            src_ortho, tmp_dir, texture_format, texture_quality,
+            texture_max_dim, console,
+        )
+        # Author a fresh .usd in the temp dir referencing the prepared texture
+        # by relative filename. CreateNewUsdzPackage walks the asset path
+        # references and pulls each one into the zip.
+        shim_usd = tmp_dir / out_usd.name
+        author_stage(
+            out_path=shim_usd,
+            dem=dem,
+            res_m=res_m,
+            ortho_rel_path=f"./{tex_path.name}",
+            origin_meta=origin_meta,
+            decimate=decimate,
+            console=console,
+        )
+        UsdUtils.CreateNewUsdzPackage(str(shim_usd), str(usdz_path))
+
+    sz_mb = usdz_path.stat().st_size / (1024 * 1024)
+    console.print(f"[green]wrote[/green] {usdz_path} ({sz_mb:.1f} MB)")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="build_usd",
@@ -137,6 +223,14 @@ def main() -> None:
                         help="Stride for subsampling the DEM (1 = full 1m grid).")
     parser.add_argument("-z", "--usdz", action="store_true",
                         help="Also produce a portable .usdz next to the .usd.")
+    parser.add_argument("-tf", "--texture-format", choices=("png", "jpeg"),
+                        default="png",
+                        help="Texture format inside the .usdz (default: png, lossless).")
+    parser.add_argument("-tq", "--texture-quality", type=int, default=90,
+                        help="JPEG quality 1..100 (ignored for PNG). Default 90.")
+    parser.add_argument("-td", "--texture-max-dim", type=int, default=None,
+                        help="Cap the long axis of the .usdz texture to this many "
+                             "pixels (Lanczos resize). Default: keep source size.")
     args = parser.parse_args()
 
     console = Console()
@@ -183,8 +277,19 @@ def main() -> None:
 
     if args.usdz:
         usdz_path = args.out.with_suffix(".usdz")
-        UsdUtils.CreateNewUsdzPackage(str(args.out), str(usdz_path))
-        console.print(f"[green]wrote[/green] {usdz_path}")
+        _build_usdz(
+            out_usd=args.out,
+            usdz_path=usdz_path,
+            dem=dem,
+            res_m=res_m,
+            origin_meta=origin_meta,
+            decimate=args.decimate,
+            src_ortho=ortho_path,
+            texture_format=args.texture_format,
+            texture_quality=args.texture_quality,
+            texture_max_dim=args.texture_max_dim,
+            console=console,
+        )
 
 
 if __name__ == "__main__":

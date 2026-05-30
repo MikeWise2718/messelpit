@@ -1,16 +1,18 @@
 <#
 .SYNOPSIS
-    Build all three USD variants of messel.usd at different mesh resolutions.
+    Build the USD variants of messel.usd at different mesh and texture sizes.
 
 .DESCRIPTION
-    Runs src/messelpit/build_usd.py three times to produce:
+    Runs src/messelpit/build_usd.py to produce:
 
-      out/messel.usd       full-res (decimate=1)  ~54M verts, ~1 GB     reference / offline renders
-      out/messel_med.usd   decimate=4             ~3.4M verts, ~250 MB  default for desktop Kit
-      out/messel_lo.usd    decimate=8             ~840K verts, ~50 MB   Quest streaming target
+      out/messel.usd          full-res (decimate=1)  ~54M verts, ~1 GB     reference / offline renders
+      out/messel_med.usd      decimate=4             ~3.4M verts, ~65 MB   default for desktop Kit
+      out/messel_lo.usd       decimate=8             ~840K verts, ~16 MB   loose-file low-poly variant
+      out/messel_lo.usdz      decimate=8 + 16384 q90 ~44 MB                packaged low-poly, JPEG-textured
+      out/messel_lo_quest.usdz decimate=8 + 8192 q90 ~24 MB                Quest streaming target
 
-    The texture (out/ortho.png) is the same for all three; only the mesh
-    density differs. Each variant gets a sibling .usdz packed alongside.
+    The texture (out/ortho.png) is the same for the loose .usd variants;
+    only the .usdz variants downsize/JPEG-compress the bundled texture.
 
     Requires data/prep/dem.tif and data/prep/ortho.png to already exist
     (produced by tools/prep_rasters.py). The .venv must be set up.
@@ -33,7 +35,7 @@
 
 .EXAMPLE
     .\tools\build_variants.ps1 -Force
-    Rebuild all three from scratch.
+    Rebuild all variants from scratch.
 
 .EXAMPLE
     .\tools\build_variants.ps1 -SkipFullRes -NoUsdz
@@ -63,27 +65,45 @@ foreach ($f in @("dem.tif", "ortho.png", "origin.json")) {
     }
 }
 
+# Each variant authors a .usd + (optionally) a .usdz. Variants ending in
+# _quest reuse the lo mesh but bundle a downsized 8192-wide JPEG texture
+# suited to Quest 3 streaming. The texture-prep step only runs for usdz.
 $variants = @(
-    @{ Name = "full"; Decimate = 1; Out = "out\messel.usd" }
-    @{ Name = "med";  Decimate = 4; Out = "out\messel_med.usd" }
-    @{ Name = "lo";   Decimate = 8; Out = "out\messel_lo.usd" }
+    @{ Name = "full";     Decimate = 1; Out = "out\messel.usd";          TexMaxDim = 16384 }
+    @{ Name = "med";      Decimate = 4; Out = "out\messel_med.usd";      TexMaxDim = 16384 }
+    @{ Name = "lo";       Decimate = 8; Out = "out\messel_lo.usd";       TexMaxDim = 16384 }
+    @{ Name = "lo_quest"; Decimate = 8; Out = "out\messel_lo_quest.usd"; TexMaxDim = 8192 }
 )
 
 if ($SkipFullRes) {
     $variants = $variants | Where-Object { $_.Name -ne "full" }
 }
 
+# lo_quest only makes sense as a .usdz -- if -NoUsdz is set, skip it.
+if ($NoUsdz) {
+    $variants = $variants | Where-Object { $_.Name -ne "lo_quest" }
+}
+
 foreach ($v in $variants) {
     $outPath = Join-Path $repoRoot $v.Out
-    $skip = (Test-Path $outPath) -and -not $Force
+    $usdzPath = [System.IO.Path]::ChangeExtension($outPath, ".usdz")
+    # Skip rule: lo_quest only ships as .usdz, so check the .usdz for existence.
+    $checkPath = if ($v.Name -eq "lo_quest") { $usdzPath } else { $outPath }
+    $skip = (Test-Path $checkPath) -and -not $Force
     Write-Host ""
-    Write-Host "=== $($v.Name) variant (decimate=$($v.Decimate)) -> $($v.Out) ===" -ForegroundColor Cyan
+    Write-Host "=== $($v.Name) variant (decimate=$($v.Decimate), tex=$($v.TexMaxDim)) -> $($v.Out) ===" -ForegroundColor Cyan
     if ($skip) {
         Write-Host "exists -- skipping (use -Force to rebuild)" -ForegroundColor Yellow
         continue
     }
     $pyArgs = @("-m", "messelpit.build_usd", "--decimate", $v.Decimate, "--out", $v.Out)
-    if (-not $NoUsdz) { $pyArgs += "--usdz" }
+    if (-not $NoUsdz) {
+        # JPEG q90 inside the .usdz keeps the bundle small without visible
+        # quality loss on orthophoto content. The on-disk .usd still
+        # references the original lossless PNG via ./ortho.png.
+        $pyArgs += @("--usdz", "--texture-format", "jpeg", "--texture-quality", "90",
+                     "--texture-max-dim", $v.TexMaxDim)
+    }
     Push-Location $repoRoot
     try {
         & $python @pyArgs

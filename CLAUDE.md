@@ -47,21 +47,30 @@ via a relative path; no build-time dependency.
 3. **`src/messelpit/build_usd.py`** — authors the USD heightfield mesh
    with a `UsdPreviewSurface` material referencing `ortho.png` via UV.
 
-## Three USD variants
+## USD variants
 
-`build_usd.py --decimate N` produces meshes at different densities. We
-generate three:
+`build_usd.py --decimate N` produces meshes at different densities;
+`--texture-format jpeg --texture-max-dim N` controls what gets bundled
+into the `.usdz`. The on-disk `.usd` always references the lossless
+`ortho.png`; only the `.usdz` bundle uses a recompressed texture.
 
-| Variant | Decimate | Verts | Tris | Size | Use |
-|---|---|---|---|---|---|
-| `messel.usd` | 1 | ~54M | ~108M | ~1 GB | Reference / offline renders |
-| `messel_med.usd` | 4 | ~3.4M | ~6.75M | ~250 MB | **Default for desktop Kit** |
-| `messel_lo.usd` | 8 | ~840K | ~1.5M | ~50 MB | Quest streaming target |
+| Variant | Decimate | Verts | Tris | `.usd` | `.usdz` | Use |
+|---|---|---|---|---|---|---|
+| `messel.usd` | 1 | ~54M | ~108M | ~1 GB | n/a (rebuild on demand) | Reference / offline renders |
+| `messel_med.usd` | 4 | ~3.4M | ~6.75M | ~65 MB | (rebuild) | **Default for desktop Kit** |
+| `messel_lo.usd` | 8 | ~840K | ~1.7M | ~16 MB | **~44 MB** (16384 JPEG q90) | Low-poly portable bundle |
+| `messel_lo_quest.usdz` | 8 | ~840K | ~1.7M | n/a | **~24 MB** (8192 JPEG q90) | Quest 3 streaming target |
 
-Why three: the full-res mesh triggers a `device lost` GPU crash ~30 s
-after stage open on RTX 4080-class hardware in Kit (works fine in
-`usdview`, which uses Storm/OpenGL). The med variant is the default for
-desktop iteration in the viewer repo.
+Why split desktop/Quest at the `.usdz` level: a single `messel_lo.usdz`
+at 8192 + JPEG would meet the size budget, but the desktop kit benefits
+from the full 16384-pixel resolution at viewing-from-altitude. Quest 3
+over Air Link has lower texture bandwidth so the halved texture is
+faster to stream and visually indistinguishable in VR.
+
+Why a separate full-res mesh: the full-res mesh triggers a `device lost`
+GPU crash ~30 s after stage open on RTX 4080-class hardware in Kit
+(works fine in `usdview`, which uses Storm/OpenGL). The med variant is
+the default for desktop iteration in the viewer repo.
 
 ## Constraints to keep in mind
 

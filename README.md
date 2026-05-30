@@ -102,25 +102,36 @@ long texture axis at 16 384 px (the D3D12 / Omniverse RTX limit). Output:
 
 ### 3. Build the USD variants
 
-Three mesh densities are built from the same DEM + texture:
+Four variants are built from the same DEM + texture: three mesh densities,
+plus a Quest-targeted low-poly with a smaller bundled texture. The on-disk
+`.usd` files all reference the same lossless `ortho.png`; the `.usdz`
+bundles use a JPEG-compressed (and for `lo_quest` downsized) texture so
+the packaged file is small enough to ship around.
 
-| Variant            | Decimate | Verts  | Tris    | `.usd` | `.usdz` | Use                                  |
-|--------------------|---------:|-------:|--------:|-------:|--------:|--------------------------------------|
-| `messel.usd`       | 1        | ~54 M  | ~108 M  | ~1 GB  | ~1.2 GB | Reference / offline renders          |
-| `messel_med.usd`   | 4        | ~3.4 M | ~6.7 M  | ~65 MB | ~220 MB | **Default for desktop Kit viewer**   |
-| `messel_lo.usd`    | 8        | ~840 K | ~1.7 M  | ~16 MB | ~170 MB | Quest streaming target               |
+| Variant                | Decimate | Verts  | Tris    | Tex inside `.usdz` | `.usd` | `.usdz` | Use                                  |
+|------------------------|---------:|-------:|--------:|--------------------|-------:|--------:|--------------------------------------|
+| `messel.usd`           | 1        | ~54 M  | ~108 M  | (rebuild)          | ~1 GB  | (rebuild) | Reference / offline renders          |
+| `messel_med.usd`       | 4        | ~3.4 M | ~6.7 M  | 16384 JPEG q90     | ~65 MB | (rebuild) | **Default for desktop Kit viewer**   |
+| `messel_lo.usd`        | 8        | ~840 K | ~1.7 M  | 16384 JPEG q90     | ~16 MB | **~44 MB** | Low-poly desktop / portable bundle  |
+| `messel_lo_quest.usdz` | 8        | ~840 K | ~1.7 M  | 8192 JPEG q90      | (n/a)  | **~24 MB** | Quest 3 streaming target            |
 
-Why three: the full-res mesh triggers a `device lost` GPU crash ~30 s after
-stage open on RTX 4080-class hardware in Omniverse Kit (works fine in
-`usdview` though, which uses Storm/OpenGL). The med variant is what the
-sibling viewer repo's `launch.bat` defaults to.
+Why four:
 
-**Note**: the texture (`ortho.png`) is the same for all three variants —
-only the mesh density changes. So the `.usdz` files don't shrink as much as
-the `.usd` files, because each `.usdz` bundles a copy of the ~150 MB
-orthophoto.
+- The **full-res mesh** triggers a `device lost` GPU crash ~30 s after
+  stage open on RTX 4080-class hardware in Omniverse Kit (works fine in
+  `usdview`, which uses Storm/OpenGL). The med variant is what the
+  sibling viewer repo's `launch.bat` defaults to.
+- The **`.usdz` files JPEG the texture at q90** rather than embedding the
+  lossless PNG. On aerial orthophotos this is visually indistinguishable
+  from PNG and drops the bundle size by roughly 4× — enough to put
+  `messel_lo.usdz` under GitHub's 50 MB recommendation. The on-disk
+  `ortho.png` is unaffected.
+- The **Quest variant** also halves the texture's long axis (16384 → 8192).
+  Quest 3 over Air Link has lower effective texture bandwidth than a
+  desktop GPU, and at the bbox scale (6 × 9 km, viewed mostly from above)
+  the detail loss is imperceptible in VR.
 
-Build all three with one command:
+Build all four with one command:
 
 ```powershell
 .\tools\build_variants.ps1
@@ -130,17 +141,33 @@ This skips variants that already exist (incremental re-runs are cheap).
 Useful flags:
 
 - `-Force` — rebuild everything from scratch
-- `-SkipFullRes` — only build med + lo (the variants you actually use day-to-day)
-- `-NoUsdz` — don't pack `.usdz` (faster but loses portability)
+- `-SkipFullRes` — only build med + lo + lo_quest (the variants you actually use day-to-day)
+- `-NoUsdz` — don't pack `.usdz` (faster, skips the JPEG texture step; also skips lo_quest since it only ships as `.usdz`)
 
 Or build a single variant directly:
 
 ```powershell
-.venv\Scripts\python.exe -m messelpit.build_usd --decimate 4 --out out\messel_med.usd --usdz
+# Desktop low-poly bundle at 16384 JPEG q90 → ~44 MB
+.venv\Scripts\python.exe -m messelpit.build_usd `
+    --decimate 8 --out out\messel_lo.usd --usdz `
+    --texture-format jpeg --texture-quality 90 --texture-max-dim 16384
+
+# Quest variant at 8192 JPEG q90 → ~24 MB
+.venv\Scripts\python.exe -m messelpit.build_usd `
+    --decimate 8 --out out\messel_lo_quest.usd --usdz `
+    --texture-format jpeg --texture-quality 90 --texture-max-dim 8192
 ```
 
+Texture flags (apply only to the `.usdz`; the loose `.usd` always
+references the original lossless `ortho.png`):
+
+- `--texture-format {png,jpeg}` (`-tf`) — format inside the `.usdz`. Default `png` (lossless, large).
+- `--texture-quality N` (`-tq`) — JPEG quality 1..100. Default 90 (visually lossless for orthophotos).
+- `--texture-max-dim N` (`-td`) — cap the long axis of the `.usdz` texture (Lanczos resize). Default: keep source size.
+
 Output: `out\messel*.usd` + `out\messel*.usdz` + `out\ortho.png` (copied from
-`data\prep\ortho.png` so the USD's relative texture reference resolves).
+`data\prep\ortho.png` so the loose USD's relative texture reference
+resolves).
 
 ## Verifying the pipeline without the Hessen download
 
