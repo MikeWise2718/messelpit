@@ -8,6 +8,7 @@ dependencies = [
     "numpy>=1.26",
     "scipy>=1.11",
     "pillow>=10",
+    "ezdxf>=1.1",
     "usd-core>=24.05",
     "rich>=13",
     "rich-argparse>=1.4",
