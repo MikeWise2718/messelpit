@@ -137,25 +137,42 @@ default widths once a preferred look is chosen.
 **Goal:** the 50 m planquadrat grid draped on the terrain, toggleable in
 the same "Survey" tab. Depends on Phase 1 for georef verification.
 
-### messelpit (authoring)
-- PSD → RGBA: `Planquad` is 1-bit; threshold to lines-on-transparent (no
-  white box). (Pillow/`psd-tools`.)
-- Georef corners **derived from the MESSEL.DXF local-frame bbox** (your
-  decision) — the DXF authored in Phase 1 gives a verified extent.
-- Author a draped textured quad (`UsdGeom.Mesh`, DEM-sampled vertices or
-  a slight z-offset) `/World/Maps/Planquad`, `UsdPreviewSurface` texture.
-- Output `out/messel_maps.usd`; extend the wrapper to also ref it under
-  `/World/Maps`.
+### messelpit (authoring) — `build_map_overlay.py`
+- PSD → RGBA: `Planquad` is 1-bit but **inverted** (white grid/contour ink
+  on a black background, ~90% black). Take white pixels → opaque (tinted
+  light cyan), black → transparent. Crop to the grid rectangle. (Pillow.)
+- **Georef: read the axis labels, don't derive from the DXF bbox.** The PSD
+  prints its own grid coordinates on the axes — eastings `82xxx`, northings
+  `3xxxx` (truncated UTM 32N), A–S columns × 1–20 rows at 50 m. Gridlines
+  detected at ~199 px/50 m; anchored: pixel x=115→E 482300, y=99→N 5531900,
+  y=4038→N 5530900. This is **more accurate** than the planned DXF-bbox
+  derivation and it self-checks: the resulting grid rectangle (local
+  x[2300..3196] y[3132..4132]) lands on the **same rectangle as the Phase-1
+  DXF contours** (x[2330..3185] y[3080..4152]). ✓
+- ⚠️ **Truncation depth differs from the DXF:** the PSD northing is `3xxxx`
+  (5 digits) vs the DXF's `53xxxx` (6) — the PSD drops one more leading
+  digit. Net local-frame transform still lands correctly; the constants
+  are baked into `PLANQUAD_LOCAL` in the builder.
+- Author a **DEM-draped quad** (97×97 grid, per-vertex DEM sample +
+  `--z-lift` 1.5 m) at `/World/Maps/Planquad`, so the grid follows the
+  ~80 m of pit relief instead of floating. `UsdPreviewSurface` with the
+  texture's alpha → `opacity` (so the black bg is see-through). UV scheme
+  matches the terrain ortho (north→v=1, east→u=1), verified.
+- Output `out/messel_maps.usd` + `out/planquad.png`; wrapper refs it via
+  `build_overlay_stage.py --maps` under `/World/Maps`.
 
 ### usd_viewer (consumer)
-- Add a "Excavation grid (Planquad)" group to the **"Survey" tab** sidecar,
-  pointing at `/World/Maps/Planquad`. Default off.
-- Copy artifacts; in-viewer **alignment QA** against the Phase-1 contours.
+- Add "Excavation grid (Planquad)" group to the **"Survey" tab** sidecar →
+  `/World/Maps/Planquad`. Copy `messel_maps.usd` + `planquad.png` + wrapper.
 
-### Done when
-Toggling "Excavation grid" drapes the 50 m grid onto the terrain, aligned
-with the Phase-1 contours. If misaligned: affine-fit fallback on 2 known
-grid intersections (note in tracker).
+### Done when — ✅ LOCKED (2026-06-15)
+"Excavation grid (Planquad)" toggle drapes the 50 m grid + contour map onto
+the terrain, on the **same rectangle as the Phase-1 contours** (verified by
+matching local bboxes; sidecar loads the 8-item Survey tab; composed stage
+resolves the Maps mesh + texture). **In-Kit visual alignment QA pending the
+user's review** — if the grid is rotated/mirrored or offset, the affine
+anchors in `build_map_overlay.py` (`PLANQUAD_LOCAL`) are the dial; affine-
+fit on 2 grid intersections is the documented fallback.
 
 ---
 
@@ -196,10 +213,10 @@ earns its place or gets dropped.
 | 8 | Extend build_overlay_stage.py: ref CAD under /World/CAD → _with_overlays.usd | 1 | messelpit | ✅ `--overlay/--cad/--maps`; composed stage validated |
 | 9 | NEW "Survey" visibility_list tab in sidecar; default off | 1 | usd_viewer | ✅ 2 tabs load (Overlays 18, Survey 7); + `run_messel_overlays.bat` |
 | 10 | Copy artifacts to data/; in-viewer QA (contours on terrain) | 1 | usd_viewer | ✅ in-Kit verified on pit (desktop); VR check deferred to polish |
-| 11 | Planquad PSD → RGBA transparent-grid texture | 2 | messelpit | ☐ |
-| 12 | Draped Planquad quad from DXF-derived corners → messel_maps.usd; ref under /World/Maps | 2 | messelpit | ☐ |
-| 13 | Add Planquad group to Survey tab sidecar | 2 | usd_viewer | ☐ |
-| 14 | Alignment QA vs Phase-1 contours; affine-fit fallback if off | 2 | usd_viewer | ☐ |
+| 11 | Planquad PSD → RGBA transparent-grid texture (inverted: white ink opaque) | 2 | messelpit | ✅ out/planquad.png, cyan lines, 11% opaque |
+| 12 | `build_map_overlay.py`: georef from axis labels, DEM-draped quad → messel_maps.usd; wrapper --maps | 2 | messelpit | ✅ 97×97 quad, local x[2300..3196] y[3132..4132] |
+| 13 | Add Planquad group to Survey tab sidecar | 2 | usd_viewer | ✅ Survey tab now 8 items; loader validated |
+| 14 | Alignment QA vs Phase-1 contours; affine-fit fallback if off | 2 | usd_viewer | ◑ bbox matches Phase-1; **in-Kit visual QA pending user** |
 | 15 | dgm_messel.dxf → /World/CAD/ContoursDGM (reuse builder, -df) | 3 | messelpit | ☐ |
 | 16 | MGKd_P PSD (CMYK→RGB) draped → /World/Maps/MGKd | 3 | messelpit | ☐ |
 | 17 | Two more Survey-tab groups (DGM contours, MGKd) | 3 | usd_viewer | ☐ |
