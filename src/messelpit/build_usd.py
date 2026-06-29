@@ -154,12 +154,16 @@ def _prep_texture_for_usdz(
 ) -> Path:
     """Produce the texture file that goes inside the usdz.
 
-    For fmt="png" with no resize, just returns src_png (zero-copy).
-    Otherwise loads, optionally resizes (Lanczos), and writes a JPEG (or PNG)
-    into out_dir under a deterministic name. Returns the path to the result.
+    Always returns a path *inside out_dir* so the caller can author a shim
+    USD that references the texture by a relative name and have
+    CreateNewUsdzPackage resolve it. For fmt="png" with no resize the source
+    is copied verbatim (no re-encode); otherwise it's loaded, optionally
+    resized (Lanczos), and written as JPEG (or PNG).
     """
     if fmt == "png" and (max_dim is None or max(Image.open(src_png).size) <= max_dim):
-        return src_png
+        out_path = out_dir / "ortho.png"
+        shutil.copy2(src_png, out_path)
+        return out_path
 
     img = Image.open(src_png)
     long_axis = max(img.size)
@@ -198,7 +202,12 @@ def _build_usdz(
     packaged. This way the desktop viewer's loose-file path stays on the
     full-fidelity PNG while the .usdz can ship a smaller texture.
     """
-    with tempfile.TemporaryDirectory(prefix="messel_usdz_") as tmp:
+    # ignore_cleanup_errors: on Windows USD may still hold an mmap handle on
+    # the bundled texture when the block exits; the .usdz is already written
+    # to usdz_path by then, so a failed temp-dir delete is harmless.
+    with tempfile.TemporaryDirectory(
+        prefix="messel_usdz_", ignore_cleanup_errors=True
+    ) as tmp:
         tmp_dir = Path(tmp)
         tex_path = _prep_texture_for_usdz(
             src_ortho, tmp_dir, texture_format, texture_quality,
