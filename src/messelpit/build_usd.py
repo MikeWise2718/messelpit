@@ -24,6 +24,7 @@ from rich.table import Table
 from rich_argparse import RichHelpFormatter
 
 from messelpit import __version__
+from messelpit.provenance import stamp_dt_provenance
 
 # The prepped ortho is up to 16384 px on the long axis; PIL's default
 # decompression-bomb guard fires below that. Disable it: we're reading
@@ -77,8 +78,13 @@ def author_stage(out_path: Path, dem: np.ndarray, res_m: float,
     stage.SetDefaultPrim(stage.DefinePrim("/World", "Xform"))
 
     world = UsdGeom.Xform.Define(stage, "/World")
-    world.GetPrim().SetCustomDataByKey("messelpit:version", __version__)
-    world.GetPrim().SetCustomDataByKey("messelpit:origin", origin_meta)
+    prim = world.GetPrim()
+    # Project-specific keys (kept for back-compat with older readers)...
+    prim.SetCustomDataByKey("messelpit:version", __version__)
+    prim.SetCustomDataByKey("messelpit:origin", origin_meta)
+    # ...and the neutral dt: provenance the viewer's generic "Sources" tab reads.
+    prov = stamp_dt_provenance(prim, origin_meta)
+    console.print(f"Provenance: tier={prov['tier']} (DGM1 + DOP20, dl-de/zero-2.0)")
 
     points, fvc, fvi, uvs = build_grid_mesh(dem, res_m, decimate)
     console.print(

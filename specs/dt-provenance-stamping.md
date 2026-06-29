@@ -183,13 +183,26 @@ Map Tiles (DOP20) + an **OPEN** (green) badge, with a Restrictions sub-tab.
 
 | Step | Owner | Status |
 |------|-------|--------|
-| Confirm DGM1 CRS/datum + acquisition vintages for accurate fields | messelpit | ☐ |
-| Add `dt:` stamps + `_compute_tier`/`_strip_nulls` in `build_usd.py` | messelpit | ☐ |
-| Handle wrapper/overlay stages (`build_overlay_stage.py`) | messelpit | ☐ |
-| Bump `__version__`, rebuild `messel_lo.usd` | messelpit | ☐ |
-| Copy rebuilt USD into `usd_viewer/data/messel/` | messelpit → viewer | ☐ |
-| Add `Sources` tab to Messel sidecar(s) | usd_viewer | ☐ (safe to do now) |
-| Verify tab renders with OPEN badge | — | ☐ |
+| Confirm DGM1 CRS/datum + acquisition vintages for accurate fields | messelpit | ◑ CRS/datum confirmed (EPSG:25832 / ETRS89 / DHHN2016); vintages still unknown (`acquired` omitted, stripped by `_strip_nulls`) |
+| Add `dt:` stamps + `compute_tier`/`_strip_nulls` in `build_usd.py` | messelpit | ✅ in new `provenance.py` (`stamp_dt_provenance`), called from `author_stage` |
+| Handle wrapper/overlay stages (`build_overlay_stage.py`) | messelpit | ✅ wrapper re-stamps `dt:` on its own `/World`; `include_osm` lights the OSM section |
+| Bump `__version__`, rebuild `messel_lo.usd` | messelpit | ✅ 0.1.0 → 0.2.0; rebuilt lo + med + both wrappers |
+| Copy rebuilt USD into `usd_viewer/data/messel/` | messelpit → viewer | ✅ lo + both wrappers copied; `dt:` verified in viewer copy |
+| Add `Sources` tab to Messel sidecar(s) | usd_viewer | ✅ added to both `messel_lo_with_osm` + `messel_lo_with_overlays` sidecars |
+| Verify tab renders with OPEN badge | — | ◑ contract verified programmatically (tier=open, OSM section on); **in-Kit visual check pending user** |
+
+**Notes from implementation:**
+- Helpers live in a dedicated `src/messelpit/provenance.py` (not inline in
+  `build_usd.py`) since both the terrain build and the wrapper need them.
+- `build_provenance` **deep-copies** the module-level source tables into the
+  result (Kalahari pattern) so a caller editing the returned provenance can't
+  corrupt the shared globals for the next build in-process. Covered by
+  `tests/test_provenance.py::test_build_provenance_does_not_mutate_module_globals`.
+- The wrapper authors its **own** `dt:` opinion rather than relying on the
+  referenced base's customData composing through — safest per the spec.
+- Sidecar uses the refined single-tab form `{ "name": "Sources", "kind":
+  "provenance" }`; the legacy `restrictions_tab`/`restrictions_name` keys the
+  original draft suggested are now ignored by the viewer (v0.9.3).
 
 ## References
 

@@ -84,6 +84,10 @@ def test_author_stage_structure(tmp_path):
     world = stage.GetPrimAtPath("/World")
     origin = world.GetCustomDataByKey("messelpit:origin")
     assert origin and int(origin["epsg"]) == 25832
+    # Neutral dt: provenance is stamped for the viewer's Sources tab.
+    dt = world.GetCustomData().get("dt", {})
+    assert dt.get("tier") == "open"
+    assert dt["provenance"]["elevation"]["provider"].startswith("Hessen DGM1")
 
 
 def test_build_usd_cli_writes_usd_and_usdz(tmp_path):

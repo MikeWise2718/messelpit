@@ -20,6 +20,7 @@ other. ``osm2usd`` already projected + draped the overlay into that frame.
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 from pxr import Sdf, Usd, UsdGeom
@@ -28,12 +29,15 @@ from rich.table import Table
 from rich_argparse import RichHelpFormatter
 
 from messelpit import __version__
+from messelpit.provenance import stamp_dt_provenance
 
 
 def author_wrapper(
     out_path: Path,
     layer_rels: list[str],
     console: Console,
+    origin_meta: dict | None = None,
+    include_osm: bool = False,
 ) -> None:
     """Create ``out_path`` referencing the terrain + any overlay stages.
 
@@ -47,6 +51,12 @@ def author_wrapper(
 
     Paths are relative so the bundle stays portable (everything lives in
     ``out/``).
+
+    The wrapper is what users open in the viewer, so it re-stamps the neutral
+    ``dt:`` provenance on its own ``/World`` (a local opinion is safest -- not
+    relying on the referenced base's customData composing through). ``origin_meta``
+    feeds the provenance origin; ``include_osm`` lights up the viewer's OSM
+    section when an OSM overlay is among the composed layers.
     """
     stage = Usd.Stage.CreateNew(str(out_path))
     stage.SetMetadata("metersPerUnit", 1.0)
@@ -54,9 +64,15 @@ def author_wrapper(
 
     world = UsdGeom.Xform.Define(stage, "/World")
     stage.SetDefaultPrim(world.GetPrim())
-    world.GetPrim().SetCustomDataByKey("messelpit:wrapper_version", __version__)
+    prim = world.GetPrim()
+    prim.SetCustomDataByKey("messelpit:wrapper_version", __version__)
+    prov = stamp_dt_provenance(prim, origin_meta, include_osm=include_osm)
+    console.print(
+        f"Provenance: tier={prov['tier']}"
+        f"{' (+OSM)' if include_osm else ''}"
+    )
 
-    refs = world.GetPrim().GetReferences()
+    refs = prim.GetReferences()
     for rel in layer_rels:
         refs.AddReference(rel)
 
@@ -126,7 +142,16 @@ def main() -> None:
         for label, p in layers
     ]
 
-    author_wrapper(args.out, [rel for _, rel in rels], console)
+    # Feed provenance: origin meta from the prep step (best-effort), and whether
+    # an OSM overlay is composed (lights up the viewer's OSM Sources section).
+    origin_meta = None
+    origin_path = Path("data/prep/origin.json")
+    if origin_path.exists():
+        origin_meta = json.loads(origin_path.read_text())
+    include_osm = args.overlay is not None
+
+    author_wrapper(args.out, [rel for _, rel in rels], console,
+                   origin_meta=origin_meta, include_osm=include_osm)
 
     summary = Table(title="Overlay wrapper", show_header=False)
     summary.add_column(style="cyan")
