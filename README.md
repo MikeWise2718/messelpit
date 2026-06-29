@@ -12,6 +12,23 @@ roughly easting 480 000..486 000 × northing 5 526 000..5 535 000. The exact til
 list lives in [`data/tile_manifest.txt`](data/tile_manifest.txt) — that's what
 to feed into the HVBG shop on a fresh machine.
 
+The SW corner of the bbox (UTM easting 480 000, northing 5 526 000) becomes the
+local USD origin `(0, 0, 0)`. In WGS84 (lon/lat, EPSG:4326):
+
+| Point | UTM 32N (E, N) | Longitude (°E) | Latitude (°N) |
+|---|---|---|---|
+| **SW corner** (USD origin) | (480 000, 5 526 000) | 8.72159 | 49.88606 |
+| SE corner                  | (486 000, 5 526 000) | 8.80511 | 49.88623 |
+| NW corner                  | (480 000, 5 535 000) | 8.72112 | 49.96701 |
+| NE corner                  | (486 000, 5 535 000) | 8.80479 | 49.96718 |
+| **Center**                 | (483 000, 5 530 500) | 8.76315 | 49.92663 |
+
+(EPSG:25832 → EPSG:4326; the UTM origin is the source of truth, recorded in
+[`data/prep/origin.json`](data/prep/origin.json) and in `customData` on `/World`.)
+
+Elevation (DGM1 DEM): **103.8 m – 228.0 m** (mean ~170.5 m). The pit floor sits
+around 120 m, the rim around 180 m — useful when authoring viewpoints.
+
 ## Setup
 
 ```powershell

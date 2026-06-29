@@ -47,12 +47,54 @@ Image.MAX_IMAGE_PIXELS = None
 
 MAPS_ROOT = "/World/Maps"
 
+#: Prim path the viewer's nudge controls (transform_list tab) write offsets
+#: against in <usd>.nudge.json. The builder reads this entry to bake an
+#: interactively-dialed offset into the source rectangle. See the bake-back
+#: loop in specs/legacy-cad-and-map-overlays.md.
+PLANQUAD_PRIM = "/World/Maps/Planquad"
+
+
+def _read_nudge_file(path: Path, prim: str, console: Console):
+    """Read [dx, dy, dz] (metres) for `prim` from a viewer .nudge.json.
+
+    The viewer bakes interactive nudges to <usd>.nudge.json as
+    {prim_path: [dx, dy, dz]}. Returns (dx, dy, dz) or (0,0,0) if the file
+    or the entry is absent. dz folds into z_lift; dx/dy shift the rectangle.
+    """
+    if not path.exists():
+        console.print(f"[yellow]nudge file not found:[/yellow] {path} (using flag defaults)")
+        return 0.0, 0.0, 0.0
+    try:
+        data = json.loads(path.read_text())
+        off = data.get(prim)
+        if isinstance(off, (list, tuple)) and len(off) == 3:
+            dx, dy, dz = float(off[0]), float(off[1]), float(off[2])
+            console.print(
+                f"[green]nudge file[/green] {path.name}: {prim} -> "
+                f"dx={dx:g} dy={dy:g} dz={dz:g} m")
+            return dx, dy, dz
+        console.print(f"[yellow]nudge file has no entry for {prim}[/yellow]")
+    except Exception as exc:
+        console.print(f"[red]nudge file read failed:[/red] {path}: {exc}")
+    return 0.0, 0.0, 0.0
+
 # Planquad grid rectangle in the scene LOCAL frame (Z-up metres, SW-corner
 # origin). Derived by reading the printed axis coordinates off Planquad.psd
 # and reconciling against the Phase-1 DXF bbox (see module docstring + spec).
 # These bound the cropped texture out/planquad.png.
+#
+# Anchored to the PSD's own printed grid labels (E 482300..483200,
+# N 5530900..5531900 after restoring the truncated digits). BUT the label-
+# derived placement put the grid ~1 cell (50 m) too far EAST of the pit
+# (caught by eye in the viewer; the DXF contours and the PSD's own contours
+# DO match shape -- same survey -- so it's a registration offset, likely an
+# off-by-one in which gridline the easting label sits against, or a small
+# error in the source map's printed coordinates). Corrected by shifting the
+# rectangle 50 m west. Fine-tune empirically with --dx/--dy.
+_NUDGE_DX = -50.0   # metres; negative = west
+_NUDGE_DY = 0.0     # metres; positive = north
 PLANQUAD_LOCAL = {
-    "x_min": 2300.0, "x_max": 3196.0,
+    "x_min": 2300.0, "x_max": 3200.0,
     "y_min": 3132.0, "y_max": 4132.0,
 }
 
@@ -193,6 +235,20 @@ def main() -> None:
     parser.add_argument(
         "-zl", "--z-lift", type=float, default=1.5,
         help="Metres above the DEM surface (default 1.5; sits above contours).")
+    parser.add_argument(
+        "-dx", "--dx", type=float, default=_NUDGE_DX,
+        help=f"East/west registration nudge in metres (default {_NUDGE_DX:g}; "
+             "negative = west). Shifts the whole grid rectangle.")
+    parser.add_argument(
+        "-dy", "--dy", type=float, default=_NUDGE_DY,
+        help=f"North/south registration nudge in metres (default {_NUDGE_DY:g}; "
+             "positive = north).")
+    parser.add_argument(
+        "-nf", "--nudge-file", type=Path, default=None,
+        help="Viewer-authored <usd>.nudge.json to bake in. Its [dx,dy,dz] for "
+             f"{PLANQUAD_PRIM} is ADDED to --dx/--dy (dz folds into --z-lift). "
+             "This is the bake-back path: nudge in the viewer, then rebuild "
+             "with this flag to fold the offset into the source asset.")
     args = parser.parse_args()
 
     console = Console()
@@ -210,7 +266,26 @@ def main() -> None:
     origin = json.loads(origin_path.read_text())
     width = float(origin["width_m"]); height = float(origin["height_m"])
 
-    rect = PLANQUAD_LOCAL
+    # Fold a viewer-baked nudge (if supplied) on top of the flag defaults.
+    bake_dx, bake_dy, bake_dz = (0.0, 0.0, 0.0)
+    if args.nudge_file is not None:
+        bake_dx, bake_dy, bake_dz = _read_nudge_file(
+            args.nudge_file, PLANQUAD_PRIM, console)
+
+    total_dx = args.dx + bake_dx
+    total_dy = args.dy + bake_dy
+    total_zlift = args.z_lift + bake_dz
+
+    rect = {
+        "x_min": PLANQUAD_LOCAL["x_min"] + total_dx,
+        "x_max": PLANQUAD_LOCAL["x_max"] + total_dx,
+        "y_min": PLANQUAD_LOCAL["y_min"] + total_dy,
+        "y_max": PLANQUAD_LOCAL["y_max"] + total_dy,
+    }
+    console.print(
+        f"registration nudge: dx={total_dx:g} dy={total_dy:g} m "
+        f"(flags {args.dx:g}/{args.dy:g} + bake {bake_dx:g}/{bake_dy:g}); "
+        f"z_lift={total_zlift:g} m")
     # Sanity: the grid rectangle must sit inside the DEM bbox.
     if not (0 <= rect["x_min"] and rect["x_max"] <= width
             and 0 <= rect["y_min"] and rect["y_max"] <= height):
@@ -225,7 +300,7 @@ def main() -> None:
         shutil.copy2(args.texture, tex_target)
 
     info = author_stage(args.out, dem, res_m, rect, f"./{args.texture.name}",
-                        args.leaf, args.subdiv, args.z_lift, console)
+                        args.leaf, args.subdiv, total_zlift, console)
 
     summary = Table(title="Map overlay build", show_header=False)
     summary.add_column(style="cyan"); summary.add_column()

@@ -176,6 +176,59 @@ fit on 2 grid intersections is the documented fallback.
 
 ---
 
+## Interactive nudge controls (cross-phase tooling)
+
+**Goal:** dial in a draped overlay's alignment *live* in the viewer instead
+of guessing an offset → rebuild → copy → look → repeat. Added because Phase 2
+needed repeated registration tweaks and "we will need this kind of
+functionality a lot going forward" (more draped sheets in Phases 3–4).
+
+This is the one place a **genuinely new tab-kind capability** was needed
+(the responsibility table anticipated this: viewer code only changes for a
+new capability, not for content). The capability is generic; the *content*
+(which prim) stays in the sidecar.
+
+### usd_viewer (consumer) — new `transform_list` tab kind
+- New tab kind `transform_list` (alongside `viewpoint_list`, `prim_list`,
+  `visibility_list`). Renders, per sidecar item (`{label, prim_path}`):
+  X/Y/Z `−/+` buttons, a shared step selector (1 / 5 / 10 / 50 m), a live
+  offset readout, and Reset. Host-agnostic (desktop + VR), same as the
+  visibility checkboxes.
+- `controls.py`: `nudge_prim` / `set_prim_offset` / `reset_prim_offset` /
+  `get_prim_offset` author a dedicated **`xformOp:translate:nudge`** on the
+  prim (never clobbering an asset-authored translate), persist the offset to
+  `.viewer.state.json` under `transform_offset` ({prim_path:[dx,dy,dz]}),
+  and reapply on scene load (`reapply_transform_offsets`, mirrors
+  `reapply_overlay_visibility`).
+- Sidecar `data/messel_lo_with_overlays.usd.viewer.json`: a **"Position"**
+  `transform_list` tab, scoped to `/World/Maps/Planquad` for now.
+
+### messelpit (authoring) — bake-back
+- Every nudge is also written to **`<usd>.nudge.json`** ({prim_path:
+  [dx,dy,dz]} metres) next to the USD — the bake-back hand-off.
+- `build_map_overlay.py --nudge-file <path>` reads the entry for
+  `/World/Maps/Planquad` and **adds** it on top of `--dx/--dy` (dz folds
+  into `--z-lift`), so the dialed-in offset gets baked into the source asset
+  on the next rebuild.
+
+### Bake-back workflow
+1. Open the wrapper in the viewer → **Position** tab → nudge Planquad until
+   it lines up with the Phase-1 contours / pit relief.
+2. The offset is live, persisted, and written to
+   `data/messel_lo_with_overlays.usd.nudge.json`.
+3. In messelpit: `python -m messelpit.build_map_overlay --nudge-file
+   <that .nudge.json>` → the offset is folded into `out/messel_maps.usd`.
+   (Optionally promote a stable value into `_NUDGE_DX/_NUDGE_DY` so it's the
+   new default and the json can be discarded.)
+4. Copy the rebuilt `messel_maps.usd` back to the viewer and hit **Reset**
+   in the Position tab (zeroes the live offset + the json) so the baked
+   offset isn't double-applied.
+
+`.nudge.json` is gitignored (per-user, transient — the canonical home for a
+settled offset is the builder default).
+
+---
+
 ## Phase 3 — secondary layers (dgm contours + MGKd sheet)
 
 Only after 1–2 prove the pattern. Each is an independent toggle so it
@@ -216,7 +269,9 @@ earns its place or gets dropped.
 | 11 | Planquad PSD → RGBA transparent-grid texture (inverted: white ink opaque) | 2 | messelpit | ✅ out/planquad.png, cyan lines, 11% opaque |
 | 12 | `build_map_overlay.py`: georef from axis labels, DEM-draped quad → messel_maps.usd; wrapper --maps | 2 | messelpit | ✅ 97×97 quad, local x[2300..3196] y[3132..4132] |
 | 13 | Add Planquad group to Survey tab sidecar | 2 | usd_viewer | ✅ Survey tab now 8 items; loader validated |
-| 14 | Alignment QA vs Phase-1 contours; affine-fit fallback if off | 2 | usd_viewer | ◑ bbox matches Phase-1; **in-Kit visual QA pending user** |
+| 14 | Alignment QA vs Phase-1 contours; affine-fit fallback if off | 2 | usd_viewer | ◑ bbox matches Phase-1; **in-Kit visual QA pending user** (use the new Position tab to dial it in) |
+| 14a | `transform_list` tab kind + nudge controls (X/Y/Z, step, reset) | tooling | usd_viewer | ✅ loader/controls/renderer + "Position" tab; persists `transform_offset`, reapplies on load |
+| 14b | Bake-back: `<usd>.nudge.json` + `build_map_overlay.py --nudge-file` | tooling | both | ✅ viewer writes json; builder folds dx/dy/dz into rect/z-lift |
 | 15 | dgm_messel.dxf → /World/CAD/ContoursDGM (reuse builder, -df) | 3 | messelpit | ☐ |
 | 16 | MGKd_P PSD (CMYK→RGB) draped → /World/Maps/MGKd | 3 | messelpit | ☐ |
 | 17 | Two more Survey-tab groups (DGM contours, MGKd) | 3 | usd_viewer | ☐ |
