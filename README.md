@@ -186,12 +186,28 @@ Output: `out\messel*.usd` + `out\messel*.usdz` + `out\ortho.png` (copied from
 `data\prep\ortho.png` so the loose USD's relative texture reference
 resolves).
 
+## Tests
+
+```powershell
+uv pip install pytest      # or: uv sync (installs the dev group)
+.venv\Scripts\python.exe -m pytest
+```
+
+Unit tests cover the pure logic (DEM grid mesher, draped-quad overlay, the
+nudge / bake-back offset math, tile-name → UTM bbox parsing) plus an
+assertion-based end-to-end build that authors a synthetic stage and packages
+a `.usdz` — the last is a regression guard for the Windows `.usdz` texture
+mapping bug. No Hessen download needed; everything runs on synthetic data in
+under a couple of seconds.
+
 ## Verifying the pipeline without the Hessen download
 
 ```powershell
 .venv\Scripts\python.exe tools\smoke_test.py
 ```
-Generates a 300 × 300 m synthetic pit and builds `out\demo\demo.usd`.
+Generates a 300 × 300 m synthetic pit and builds `out\demo\demo.usd`. (The
+pytest suite above does the same end-to-end build *with assertions* — the
+script is just a quick eyeball-it-yourself variant.)
 
 ## Opening in Omniverse
 

@@ -15,6 +15,17 @@ dependencies = [
     "requests>=2.31",
 ]
 
+[dependency-groups]
+dev = [
+    "pytest>=8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# tools/ holds importable-but-not-packaged helpers (prep_rasters, etc.);
+# add it to sys.path so tests can import them by module name.
+pythonpath = ["src", "tools"]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
