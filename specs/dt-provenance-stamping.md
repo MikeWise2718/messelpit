@@ -8,7 +8,7 @@ licenses, and an overall RESTRICTED/OPEN badge). It is **scene-agnostic**: it re
 *neutral* `dt:` customData namespace off the stage's `/World` prim, so any digital-twin
 pipeline can light it up by stamping the same keys.
 
-The **Kalahari** project (`D:\senckenberg\Kalihari_dt`) already stamps `dt:` provenance,
+The **Kalahari** project (`D:\senckenberg\Kalahari_dt`) already stamps `dt:` provenance,
 so its scenes show a Sources tab. **Messel does not** — `messelpit` stamps the older,
 project-specific `messelpit:` keys (`messelpit:version`, `messelpit:origin`), which the
 generic tab doesn't read. So even if a Messel sidecar declared the tab, it would render
@@ -117,8 +117,8 @@ prim.SetCustomDataByKey("dt:tier", provenance["tier"])
 prim.SetCustomDataByKey("dt:origin", origin_meta)
 ```
 
-Helpers (copy the pattern from `Kalihari_dt/tools/recipes.py` and
-`Kalihari_dt/tools/build_usd.py`):
+Helpers (copy the pattern from `Kalahari_dt/tools/recipes.py` and
+`Kalahari_dt/tools/build_usd.py`):
 
 ```python
 _TIER_RANK = {"restricted": 2, "open": 1}
@@ -207,6 +207,6 @@ Map Tiles (DOP20) + an **OPEN** (green) badge, with a Restrictions sub-tab.
 ## References
 
 - Viewer contract: `D:\senckenberg\usd_viewer\specs\provenance-tab.md`
-- Working reference implementation: `D:\senckenberg\Kalihari_dt\tools\build_usd.py`
+- Working reference implementation: `D:\senckenberg\Kalahari_dt\tools\build_usd.py`
   (`author_stage`, `_strip_nulls`) and `tools\recipes.py` (`compute_tier`, `provenance`)
 - Messel sources/licenses: `specs\messel-pit-usd.md` (§ Data sources)
