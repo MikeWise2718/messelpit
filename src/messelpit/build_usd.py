@@ -24,6 +24,7 @@ from rich.table import Table
 from rich_argparse import RichHelpFormatter
 
 from messelpit import __version__
+from messelpit.materials import set_matte
 from messelpit.provenance import stamp_dt_provenance
 
 # The prepped ortho is up to 16384 px on the long axis; PIL's default
@@ -113,8 +114,10 @@ def author_stage(out_path: Path, dem: np.ndarray, res_m: float,
     material = UsdShade.Material.Define(stage, "/World/Terrain/Mat")
     pbr = UsdShade.Shader.Define(stage, "/World/Terrain/Mat/PBR")
     pbr.CreateIdAttr("UsdPreviewSurface")
-    pbr.CreateInput("roughness", Sdf.ValueTypeNames.Float).Set(0.9)
-    pbr.CreateInput("metallic", Sdf.ValueTypeNames.Float).Set(0.0)
+    # Was roughness=0.9 + metallic=0 and NO ior -- so ior defaulted to 1.5 and the
+    # terrain flared white at grazing angles. roughness is not the specular knob;
+    # ior is. See materials.set_matte.
+    set_matte(pbr)
 
     st_reader = UsdShade.Shader.Define(stage, "/World/Terrain/Mat/StReader")
     st_reader.CreateIdAttr("UsdPrimvarReader_float2")

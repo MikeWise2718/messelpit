@@ -90,6 +90,59 @@ def test_author_stage_structure(tmp_path):
     assert dt["provenance"]["elevation"]["provider"].startswith("Hessen DGM1")
 
 
+def test_terrain_material_is_matte(tmp_path):
+    """The terrain must not carry a specular lobe.
+
+    THE BUG: this shipped with roughness=0.9, metallic=0, and NO `ior`. An unset
+    `ior` is not neutral -- UsdPreviewSurface defaults it to **1.5**, and its
+    dielectric specular response then ramps toward 1.0 at glancing angles NO MATTER
+    the roughness. That is Fresnel. Terrain is viewed from low, raking angles across
+    a whole landscape, which is exactly where the lobe blows out: the DEM flares
+    white and reads as "the scene is washing out".
+
+    The same one-liner has shipped FIVE times across this project, in five
+    independent material authors, because `roughness` looks like the specular knob
+    and is not. Post-mortem: usd_viewer/specs/default-lighting.md.
+
+    So: assert the four inputs are AUTHORED, not merely absent. `.Get()` returning
+    None is a failure, not a pass -- an unset ior IS the bug.
+    """
+    from pxr import UsdShade
+
+    dem, _ = _synthetic(tmp_path)
+    out = tmp_path / "demo.usd"
+    Image.open(tmp_path / "ortho.png").save(out.parent / "ortho.png")
+
+    from rich.console import Console
+    author_stage(
+        out_path=out, dem=dem, res_m=1.0, ortho_rel_path="./ortho.png",
+        origin_meta={"epsg": 25832, "width_m": 64, "height_m": 64},
+        decimate=1, console=Console(quiet=True),
+    )
+
+    stage = Usd.Stage.Open(str(out))
+    mat = UsdShade.Material(stage.GetPrimAtPath("/World/Terrain/Mat"))
+    assert mat, "terrain material missing"
+    shader = mat.ComputeSurfaceSource()[0]
+    assert shader, "terrain material has no surface shader"
+
+    for name, want in (("ior", 1.0), ("roughness", 1.0), ("metallic", 0.0)):
+        inp = shader.GetInput(name)
+        assert inp, f"'{name}' not authored at all -- defaults are NOT safe"
+        got = inp.Get()
+        assert got is not None, f"'{name}' authored but unset"
+        assert got == pytest.approx(want), f"{name}={got}, want {want}"
+
+    spec = shader.GetInput("specularColor")
+    assert spec and spec.Get() is not None, "specularColor not authored"
+    assert tuple(spec.Get()) == pytest.approx((0.0, 0.0, 0.0))
+
+    # And the texture must still be wired -- guard against someone "fixing" the
+    # flare by zeroing diffuse instead of ior.
+    diffuse = shader.GetInput("diffuseColor")
+    assert diffuse and diffuse.GetConnectedSource(), "diffuse texture got disconnected"
+
+
 def test_build_usd_cli_writes_usd_and_usdz(tmp_path):
     """Drive build_usd.main() via subprocess with --usdz, the path that
     previously crashed on Windows. Asserts both artifacts appear."""

@@ -61,6 +61,7 @@ from rich.table import Table
 from rich_argparse import RichHelpFormatter
 
 from messelpit import __version__
+from messelpit.materials import set_matte
 
 # Northing reconstruction. The DXF northings are truncated (5_5xx_xxx printed
 # as 5xx_xxx), but it is NOT a clean "+5_000_000": that lands the geometry
@@ -197,8 +198,7 @@ def _curve_material(stage, parent_path: str, color):
     c = Gf.Vec3f(*color)
     pbr.CreateInput("diffuseColor", Sdf.ValueTypeNames.Color3f).Set(c)
     pbr.CreateInput("emissiveColor", Sdf.ValueTypeNames.Color3f).Set(c)
-    pbr.CreateInput("roughness", Sdf.ValueTypeNames.Float).Set(1.0)
-    pbr.CreateInput("metallic", Sdf.ValueTypeNames.Float).Set(0.0)
+    set_matte(pbr)   # ior was unset -> 1.5 -> Fresnel flare. See materials.set_matte.
     mat.CreateSurfaceOutput().ConnectToSource(pbr.ConnectableAPI(), "surface")
     return mat
 

@@ -42,6 +42,7 @@ from rich.table import Table
 from rich_argparse import RichHelpFormatter
 
 from messelpit import __version__
+from messelpit.materials import set_matte
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -178,8 +179,7 @@ def author_stage(out_path: Path, dem: np.ndarray, res_m: float, rect: dict,
     mat = UsdShade.Material.Define(stage, f"{prim_path}/Mat")
     pbr = UsdShade.Shader.Define(stage, f"{prim_path}/Mat/PBR")
     pbr.CreateIdAttr("UsdPreviewSurface")
-    pbr.CreateInput("roughness", Sdf.ValueTypeNames.Float).Set(1.0)
-    pbr.CreateInput("metallic", Sdf.ValueTypeNames.Float).Set(0.0)
+    set_matte(pbr)   # ior was unset -> 1.5 -> Fresnel flare. See materials.set_matte.
 
     reader = UsdShade.Shader.Define(stage, f"{prim_path}/Mat/StReader")
     reader.CreateIdAttr("UsdPrimvarReader_float2")
