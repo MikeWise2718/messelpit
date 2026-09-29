@@ -34,7 +34,17 @@ dip_at_rim_deg = 22.5
 # coordinates. ASSUMPTION: the lowest point of today's pit floor (DGM1 103.8 m NN).
 low = [2622.0, 3567.0]
 
+# Section fills (for the viewer's section cut): what lies between today's ground and the
+# topmost surface below it, and the frame the maar is cut into. A surface ABOVE the
+# ground (the pre-mining lid) is drawn as a pale "removed" band instead.
+[fills]
+ground_unit = { unit = "Middle Messel-Fm: laminated oil shale (Schwarzpelit)", color = "#3d3a35" }
+frame = { unit = "Palaeozoic frame: Rotliegend, granodiorite, diorite, amphibolite (not modelled)", color = "#8c8680" }
+section_bottom_m_nn = -340.0   # a little below FB 2001's end depth (433 m -> ~-329 m NN)
+
 # Surfaces: the TOP of each unit, coloured as that unit. z_centre = at the structural low.
+# max_thickness_m: where the next surface down is absent, the unit ends this far below
+# its top and the frame follows (the maar walls cut units off; schematic).
 [[surface]]
 id = "pre_mining_ground"
 title = "Ground before mining, c. 1885 (schematic)"
@@ -51,6 +61,7 @@ unit = "Lower Messel-Formation (breccias, turbidites, tuffitic)"
 color = "#9a7650"
 kind = "bowl"
 z_centre = 6.0
+max_thickness_m = 135.0    # FB 2001: 100-229 m depth (p. 30)
 note = "Base of the Schwarzpelit at ~6 m NN in the structural low (borehole 6/24 and FB 2001), ~99 m remaining, ~160 m before mining (p. 35)."
 
 [[surface]]
@@ -60,6 +71,7 @@ unit = "Tuffitic sediments (transition below the lake fill)"
 color = "#b3a77c"
 kind = "bowl"
 z_centre = -129.0
+max_thickness_m = 11.0     # FB 2001: 229-240 m depth (p. 30)
 note = "Base of the Messel-Formation at ~-129 m NN in FB 2001 (p. 37); FB 2001 drilled 229 m of lacustrine fill (p. 30)."
 
 [[surface]]
@@ -70,6 +82,7 @@ color = "#7f9168"
 kind = "pipe"
 z_centre = -140.0          # 240 m depth in FB 2001 (p. 30), ground ~100 m NN
 pipe_fraction = 0.40       # ASSUMPTION: diatreme radius as a fraction of the deposit
+max_thickness_m = 133.0    # 240-373 m depth (p. 30)
 note = "Lapilli tuff between 240 and 373 m depth in FB 2001 (p. 30). The diatreme lies under the structural low (p. 37); its width here is schematic."
 
 [[surface]]

@@ -6,7 +6,8 @@ needs numpy and rasterio only to read the DGM1 height at the borehole.
 
 Output format (dtlite "geology" overlay, local metres, m NN):
   { "dtlite": {...}, "grid": {x0, y_top, dx, nx, ny},            # row 0 = north
-    "surfaces": [{id, title, unit, color, note, z: [nx*ny | null]}],
+    "surfaces": [{id, title, unit, color, note, z: [nx*ny | null], max_thickness_m?}],
+    "fills": {ground_unit, frame, section_bottom_m_nn},     # for section cuts
     "columns": [{id, title, x, y, ground_z, radius_m, note, segments: [...]}] }
 """
 
@@ -72,7 +73,10 @@ def build(toml_path: Path, dem_path: Path) -> dict:
         else:
             raise ValueError(f"unknown surface kind {s['kind']!r}")
         zs = [round(float(v), 2) if ok else None for v, ok in zip(z.ravel(), inside.ravel())]
-        surfaces.append({k: s[k] for k in ("id", "title", "unit", "color", "note")} | {"z": zs})
+        out = {k: s[k] for k in ("id", "title", "unit", "color", "note")} | {"z": zs}
+        if "max_thickness_m" in s:
+            out["max_thickness_m"] = s["max_thickness_m"]
+        surfaces.append(out)
 
     with rasterio.open(dem_path) as src:
         row, col = src.index(lx, ly)
@@ -93,4 +97,5 @@ def build(toml_path: Path, dem_path: Path) -> dict:
         "grid": {"x0": x0, "y_top": y_top, "dx": GRID_M, "nx": n, "ny": n},
         "surfaces": surfaces,
         "columns": [column],
+        "fills": cfg["fills"],
     }
