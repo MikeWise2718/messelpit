@@ -46,6 +46,6 @@ What is known and what is assumed is collected in one place:
 
 ## Who
 
-Built by Mike Wise (Senckenberg volunteer) with **Krister Smith** (Senckenberg, Messel).
+Built by Mike Wise with **Krister Smith** (Senckenberg, Messel).
 The scene data is produced by the `messelpit` repo; the viewer is `dtlite`. Versions,
 build dates and the full source list are in **About**.
