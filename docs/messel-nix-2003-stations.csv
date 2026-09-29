@@ -126,7 +126,7 @@ IN19,inclinometer,3482512,5531543,129.99,40.00,sheared off
 IN20,inclinometer,3482496,5531088,121.05,40.00,
 IN21,inclinometer,3482990,5531288,123.54,40.00,
 IN22,inclinometer,3482928,5531398,124.62,40.00,sheared off
-IN23,inclinometer,3483013,5531691,116.18,45.00,
+IN23,inclinometer,3483013,5531691,116.18,45.00,SUSPECT OCR: DGM1 ground here is ~160 m (+43.9 m); likely 160.18 - check PDF p. 125
 IN24,inclinometer,3483110,5531245,171.16,40.00,
 IN25,inclinometer,3482719,5531810,149.11,50.00,sheared off
 IN26,inclinometer,3482609,5531645,130.00,50.00,sheared off

@@ -142,6 +142,11 @@ Parsed into **`docs/messel-nix-2003-stations.csv`** (this repo). Notes:
   (e.g. "ISO"→150, split digit groups rejoined). Spot-check against the PDF
   (pp. 123–127) before any precision use. Elevations double as ~170 spot heights on
   the 2001 pit topography — a useful sanity check against the DGM1.
+- **Checked against the DGM1 (2026-09-29, via `tools/export_web.py`):** after the
+  GK3 → UTM 32N transform, the 2001 elevations match today's DGM1 at a median of
+  +0.03 m (MAD 0.32 m), 97 % within 2 m — so both the transform and the OCR clean-up
+  hold. Outliers: **IN23** (+43.9 m — almost certainly an OCR misread, flagged in the
+  CSV), benchmarks 9002/9003 (−6 m, outside the pit), 9032 (+3.6 m).
 
 ## 5. Landslides (Ch. 4–7) — context for the "today" model
 
