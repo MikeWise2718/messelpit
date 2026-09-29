@@ -1,0 +1,99 @@
+# Page numbers are BOOK pages (PDF page - 1).
+#
+# Schematic geological layer model of the Messel deposit, for the dtlite viewer.
+#
+# SCHEMATIC. Every elevation below is from Nix (2003), Geol. Abh. Hessen 112 (book pages
+# cited); the SHAPES between those numbers are a parametric bowl, not interpolated
+# boreholes. The 982-hole database that would make this faithful is in the unpublished
+# Nix (2001) report (docs/messel-nix-2003-notes.md §3). Anything marked ASSUMPTION is a
+# placement choice, not a published value — change it here, rerun tools/export_web.py.
+#
+# Frame: local scene metres (SW origin, UTM 32N 480000/5526000), elevations m NN.
+
+[deposit]
+# Outline = an ellipse fitted to today's pit at the 155 m contour (DGM1, 5 m, measured
+# 2026-09-29: centre 2661/3597, semi-axes 439/360 m, major axis 62° from east). By 1957
+# the W/E/S pit rims already matched today's extent, and mining there stopped in the
+# "Randbereichen des Vorkommens" (p. 45), so the pit outline stands in for the deposit
+# outline. ASSUMPTION: an ellipse.
+centre = [2661.0, 3597.0]
+semi_axes_m = [440.0, 360.0]
+bearing_deg = 62.0            # major axis, counter-clockwise from east
+top_m_nn = 170.0              # rim level: scarps at the pit rim at ~160-170 m NN (p. 46)
+# Maar walls: listric faults against the Palaeozoic frame, steep in S/SE/W, stepped in
+# N (p. 37). ASSUMPTION: one mean wall angle, so the fill narrows with depth.
+wall_angle_deg = 60.0
+
+[structure]
+# Beds are near-horizontal in the centre and dip 20-25° toward the rims (p. 37).
+# Bed surface: z(rho) = z_centre + A * rho^2, rho = normalised ellipse radius, with A
+# chosen so the slope at the rim is tan(dip_at_rim).
+dip_at_rim_deg = 22.5
+# The structural low / FB 2001 site. Nix: FB 2001 "im Zentrum der Grube" (p. 30), in
+# the structural low "im Südosten des Vorkommens" (p. 37). The published text gives no
+# coordinates. ASSUMPTION: the lowest point of today's pit floor (DGM1 103.8 m NN).
+low = [2622.0, 3567.0]
+
+# Surfaces: the TOP of each unit, coloured as that unit. z_centre = at the structural low.
+[[surface]]
+id = "pre_mining_ground"
+title = "Ground before mining, c. 1885 (schematic)"
+unit = "Pre-mining ground surface"
+color = "#e3d3a4"
+kind = "flat"
+z = 168.0
+note = "Oil shale was ~160 m thick before mining over a base at ~6 m NN (p. 35) -> top ~166 m NN, plus 1-3 m Quaternary (p. 36); the Upper Messel-Fm (30-35 m) survived only in three marginal troughs (p. 36). The volume between this lid and today's ground is what was mined, 1885-1971."
+
+[[surface]]
+id = "top_lower_fm"
+title = "Base of the oil shale / top of the Lower Messel-Fm"
+unit = "Lower Messel-Formation (breccias, turbidites, tuffitic)"
+color = "#9a7650"
+kind = "bowl"
+z_centre = 6.0
+note = "Base of the Schwarzpelit at ~6 m NN in the structural low (borehole 6/24 and FB 2001), ~99 m remaining, ~160 m before mining (p. 35)."
+
+[[surface]]
+id = "top_tuffite"
+title = "Base of the Messel-Formation (lake fill)"
+unit = "Tuffitic sediments (transition below the lake fill)"
+color = "#b3a77c"
+kind = "bowl"
+z_centre = -129.0
+note = "Base of the Messel-Formation at ~-129 m NN in FB 2001 (p. 37); FB 2001 drilled 229 m of lacustrine fill (p. 30)."
+
+[[surface]]
+id = "top_lapilli_tuff"
+title = "Top of the lapilli tuff (diatreme)"
+unit = "Lapilli tuff (phreatomagmatic eruption products)"
+color = "#7f9168"
+kind = "pipe"
+z_centre = -140.0          # 240 m depth in FB 2001 (p. 30), ground ~100 m NN
+pipe_fraction = 0.40       # ASSUMPTION: diatreme radius as a fraction of the deposit
+note = "Lapilli tuff between 240 and 373 m depth in FB 2001 (p. 30). The diatreme lies under the structural low (p. 37); its width here is schematic."
+
+[[surface]]
+id = "top_diatreme_breccia"
+title = "Top of the diatreme breccia"
+unit = "Diatreme breccia (Rotliegend / granodiorite / amphibolite clasts)"
+color = "#6f5d78"
+kind = "pipe"
+z_centre = -273.0          # 373 m depth in FB 2001
+pipe_fraction = 0.30
+note = "Layered mega-breccia below 373 m depth in FB 2001, drilled to 433 m (p. 30)."
+
+# FB 2001 column: depths below ground from the log summary (p. 30). Ground elevation is
+# read from the DGM1 at `structure.low`.
+[column]
+id = "fb2001"
+title = "Research borehole FB Messel 2001 (location schematic)"
+radius_m = 6.0
+note = "Drilled 2001 by FIS / GGA / HLUG in the pit centre, 433 m deep (p. 30). Depths are from the log summary; the position is the ASSUMED structural low."
+segments = [
+  { from_m = 0,   to_m = 100, unit = "Middle Messel-Fm: laminated oil shale (Schwarzpelit)", color = "#3d3a35" },
+  { from_m = 100, to_m = 208, unit = "Lower Messel-Fm: breccious sediments (Rotliegend, granodiorite, amphibolite clasts)", color = "#9a7650" },
+  { from_m = 208, to_m = 229, unit = "Lower Messel-Fm: fine layered sands, silts, breccias", color = "#b08a5e" },
+  { from_m = 229, to_m = 240, unit = "Tuffitic sediment", color = "#b3a77c" },
+  { from_m = 240, to_m = 373, unit = "Lapilli tuff", color = "#7f9168" },
+  { from_m = 373, to_m = 433, unit = "Diatreme breccia", color = "#6f5d78" },
+]

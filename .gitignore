@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 data/*
 !data/tile_manifest.txt
+!data/geology_schematic.toml
 out/
 .uv-cache/
 *.egg-info/
