@@ -1,12 +1,14 @@
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["pyproj>=3.6", "rich>=13", "rich-argparse>=1.4"]
+# dependencies = ["pyproj>=3.6", "rasterio>=1.3", "numpy>=1.26", "rich>=13", "rich-argparse>=1.4"]
 # ///
 """Export the Messel scene as a dtlite web bundle (dthub/specs/dtlite.md).
 
 Scene knowledge stays here; the bundling is dtlite's generic `dtlite-bundle`, run from
 the sibling dtlite checkout. What this adds on top:
 
+- the schematic geological layer model (data/geology_schematic.toml, built by
+  tools/geology_schematic.py) as a dtlite geology overlay;
 - the Nix (2003) monitoring stations (docs/messel-nix-2003-stations.csv), transformed
   DHDN / Gauss-Krueger zone 3 (EPSG:31467) -> ETRS89 / UTM 32N (EPSG:25832) -> local
   scene metres (SW origin from data/prep/origin.json), written as GeoJSON.
@@ -89,6 +91,13 @@ def main(argv=None):
     n = stations_geojson(REPO / "docs" / "messel-nix-2003-stations.csv", origin, stations)
     console.print(f"stations: {n} points -> {stations}")
 
+    sys.path.insert(0, str(Path(__file__).parent))
+    from geology_schematic import build as build_geology
+    geo = build_geology(REPO / "data" / "geology_schematic.toml", prep / "dem.tif")
+    geology = stage / "messel.geology.json"
+    geology.write_text(json.dumps(geo, separators=(",", ":")), encoding="utf-8")
+    console.print(f"geology: {len(geo['surfaces'])} surfaces, {len(geo['columns'])} column(s) -> {geology}")
+
     if not DTLITE.is_dir():
         console.print(f"[red]dtlite checkout not found at {DTLITE}[/red] (set DTLITE_DIR)")
         return 2
@@ -97,7 +106,7 @@ def main(argv=None):
            "-d", str(prep / "dem.tif"), "-or", str(prep / "ortho.png"),
            "-st", str(a.step), "-sc", str(a.sidecar),
            "-dr", str(REPO / "out" / "messel.osm.drape.json"),
-           "-gj", str(stations), "-o", str(a.out.resolve())]
+           "-gj", str(stations), "-go", str(geology), "-o", str(a.out.resolve())]
     if a.tiles:
         cmd += ["-tm", str(a.tiles)]
     env = {k: v for k, v in os.environ.items() if k not in ("PYTHONHOME", "VIRTUAL_ENV")}
