@@ -1,0 +1,26 @@
+[
+  {
+    "name": "DGM1 — digital terrain model, 1 m",
+    "what": "terrain (29 tiles of 1 km, airborne laser scanning)",
+    "provider": "HVBG / Geobasis Hessen",
+    "license": "Datenlizenz Deutschland – Zero – 2.0",
+    "date": "flight date not recorded; tiles downloaded 2026-05-19",
+    "url": "https://gds.hessen.de/INTERSHOP/web/WFS/HLBG-Geodaten-Site/de_DE/-/EUR/ViewDownloadcenter-Start?path=3D-Daten/Digitales+Gel%C3%A4ndemodell+(DGM1)"
+  },
+  {
+    "name": "DOP20 — digital orthophotos, 20 cm",
+    "what": "imagery (29 tiles of 1 km)",
+    "provider": "HVBG / Geobasis Hessen",
+    "license": "Datenlizenz Deutschland – Zero – 2.0",
+    "date": "flight date not recorded; tiles downloaded 2026-05-19",
+    "url": "https://gds.hessen.de/INTERSHOP/web/WFS/HLBG-Geodaten-Site/de_DE/-/EUR/ViewDownloadcenter-Start?path=Luftbildinformationen/Digitale+Orthophotos+DOP20"
+  },
+  {
+    "name": "Nix (2003), Geologische Abhandlungen Hessen 112",
+    "what": "monitoring-station coordinates (appendix 12.1); all geology elevations",
+    "provider": "Hessisches Landesamt für Umwelt und Geologie (HLUG)",
+    "license": "published monograph — cited",
+    "date": "2003",
+    "citation": "Nix, T. (2003): Untersuchung der ingenieurgeologischen Verhältnisse der Grube Messel (Darmstadt) im Hinblick auf die Langzeitstabilität der Grubenböschungen. Geol. Abh. Hessen 112, 159 pp. ISBN 3-89531-814-0."
+  }
+]

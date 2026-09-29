@@ -9,6 +9,8 @@ the sibling dtlite checkout. What this adds on top:
 
 - the schematic geological layer model (data/geology_schematic.toml, built by
   tools/geology_schematic.py) as a dtlite geology overlay;
+- the scene docs (docs/web/*.md, shown in dtlite's Docs panel) and the source list
+  (docs/web/sources.json, shown in About);
 - the Nix (2003) monitoring stations (docs/messel-nix-2003-stations.csv), transformed
   DHDN / Gauss-Krueger zone 3 (EPSG:31467) -> ETRS89 / UTM 32N (EPSG:25832) -> local
   scene metres (SW origin from data/prep/origin.json), written as GeoJSON.
@@ -106,7 +108,9 @@ def main(argv=None):
            "-d", str(prep / "dem.tif"), "-or", str(prep / "ortho.png"),
            "-st", str(a.step), "-sc", str(a.sidecar),
            "-dr", str(REPO / "out" / "messel.osm.drape.json"),
-           "-gj", str(stations), "-go", str(geology), "-o", str(a.out.resolve())]
+           "-gj", str(stations), "-go", str(geology),
+           "-dd", str(REPO / "docs" / "web"), "-so", str(REPO / "docs" / "web" / "sources.json"),
+           "-o", str(a.out.resolve())]
     if a.tiles:
         cmd += ["-tm", str(a.tiles)]
     env = {k: v for k, v in os.environ.items() if k not in ("PYTHONHOME", "VIRTUAL_ENV")}
