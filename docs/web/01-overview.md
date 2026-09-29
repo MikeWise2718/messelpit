@@ -1,7 +1,5 @@
 # Grube Messel — overview
 
-**Start here if you have never seen this scene.**
-
 ## What this place is
 
 Grube Messel is a former **oil-shale open-pit mine** near Darmstadt (Hesse, Germany),
