@@ -76,6 +76,8 @@ def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0], formatter_class=RichHelpFormatter)
     p.add_argument("-o", "--out", type=Path, default=REPO / "out" / "web", help="bundle output dir")
     p.add_argument("-st", "--step", type=float, default=6.0, help="terrain grid step (m)")
+    p.add_argument("-tm", "--tiles", type=float, default=1.0,
+                   help="finest tile cell (m) for the LOD pyramid; 0 = no tiles")
     p.add_argument("-sc", "--sidecar", type=Path, default=VIEWER_DATA / "messel_lo.usdz.viewer.json",
                    help="Kit sidecar to carry along (viewpoints etc.)")
     a = p.parse_args(argv)
@@ -96,6 +98,8 @@ def main(argv=None):
            "-st", str(a.step), "-sc", str(a.sidecar),
            "-dr", str(REPO / "out" / "messel.osm.drape.json"),
            "-gj", str(stations), "-o", str(a.out.resolve())]
+    if a.tiles:
+        cmd += ["-tm", str(a.tiles)]
     env = {k: v for k, v in os.environ.items() if k not in ("PYTHONHOME", "VIRTUAL_ENV")}
     return subprocess.run(cmd, env=env).returncode
 
