@@ -46,7 +46,7 @@ are given with a translation.
 | **KP** | piezometer (our reading: *Kontrollpegel*, monitoring gauge) | Station prefix: KP 101–525, shallow groundwater levels. Nix does not spell the letters out. |
 | **GW** | deep well (our reading: *Grundwasser*, groundwater) | Station prefix: GW 1–5, groundwater in the crystalline rock. Nix does not spell the letters out. |
 | **F** | fixed geodetic point (*Festpunkt*) | Station prefix: F1–F5, survey reference points. |
-| **IN23** | inclinometer no. 23 | The station whose printed height looks misread (see Assumptions). |
+| **IN23** | inclinometer no. 23 | The station whose height is misprinted in Nix (2003) (see Monitoring stations). |
 | **GemPy** | — | Open-source software for 3D geological models from boreholes; what Krister Smith's "Messel DT v0" is built in. |
 | **DT** | Digital twin | A detailed computer model of a real place, kept in step with data about it. |
 | **UNESCO** | United Nations Educational, Scientific and Cultural Organization | Lists Messel as a World Heritage site (1995). |

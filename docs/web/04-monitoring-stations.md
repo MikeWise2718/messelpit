@@ -44,8 +44,11 @@ Checked against today's terrain: the 2001 ground heights of the stations match t
 at a **median of +0.03 m**, and **97 % are within 2 m**. So both the transform and the
 transcription hold. Outliers:
 
-- **IN23** is listed at 116.18 m but the ground there is ~160 m (+43.9 m): almost
-  certainly an OCR misread (flagged in the CSV; check the appendix table, book pp. 123–127).
+- **IN23** is listed at 116.18 m but the ground there is ~160 m (+43.9 m). The scan
+  confirms the book really prints 116,18, so this is a **misprint in Nix**, not a
+  transcription error. The height is the likely mistake (probably 160,18): the ground at
+  the printed position is 160.03 m, and no one-digit slip in the coordinates reaches
+  ground at ~116 m. The viewer keeps the printed value and flags it.
 - Points 9002 / 9003 (−6 m) lie outside the pit; 9032 (+3.6 m).
 
 The pins stand on **today's** ground, not the 2001 height, so they never float or sink

@@ -33,7 +33,8 @@ Where this scene can go from here, as of 2026-09-29. The working tracker is
 
 ## Monitoring stations
 
-- **Check IN23** against the printed table (its height reads 44 m below the ground).
+- ~~Check IN23 against the printed table~~ — done 2026-09-30: the book itself prints
+  116,18 (a misprint, probably for 160,18); see Monitoring stations.
 - Find out **which stations still exist** and whether readings since 2003 are available —
   the 2001 heights against today's terrain already show where the ground has moved.
 

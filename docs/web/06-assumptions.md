@@ -20,7 +20,8 @@ these is resolved, fix the data and strike it here.
 - Coordinates were **OCR'd** from a scanned table and cleaned by hand; the datum shift
   from Gauss–Krüger is the standard one (≈1 m). Checked: 97 % of heights match today's
   terrain within 2 m.
-- **IN23**'s height is almost certainly misread (+43.9 m off).
+- **IN23**'s height is 43.9 m off: a misprint in Nix (checked against the scan), most
+  likely 160,18 printed as 116,18. Kept as printed, flagged.
 - They are the **2001–2003** network; which stations still exist today is not known.
 
 ## Geology — schematic
