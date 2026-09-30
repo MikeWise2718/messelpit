@@ -24,6 +24,37 @@ The PDF is in `dthub/docs/`; notes on the whole monograph are in
 **Click a pin** to see its name, type, depth, remark, its ground height in the 2001
 table and today's ground height at the same spot.
 
+## What the inclinometers measure
+
+An inclinometer shows **how the ground slides sideways, at every depth**.
+
+- A borehole is lined with a tube with four grooves inside. Its foot is anchored in
+  stable rock below any moving ground.
+- From time to time a probe is run down the grooves and measures the tube's **tilt**
+  every half metre or so. Adding the tilts up gives the tube's shape from top to bottom.
+- Comparing each survey with the first shows **how far each depth has moved**, and in
+  which direction, since the tube was installed.
+
+What the shape tells you:
+
+- A **sharp kink** at one depth is a **slip surface**: the mass above slides as a block
+  over the ground below.
+- A **gradual bend** is slow creep spread through the soil.
+- Repeated surveys give the **speed**: at Messel, millimetres to centimetres a year,
+  faster after heavy rain. Nix gives the rain that reactivates the slides as more than
+  **105 mm in a month or 35 mm in 72 hours**.
+
+**"Sheared off"** (*abgeschert*, the remark on many inclinometers) means the movement
+bent or broke the tube so badly that the probe no longer gets through: that station can
+no longer be read. It is still a result, because it pinpoints the slip surface. From
+them Nix found slip surfaces at **7–49 m depth**, often at the boundary between the
+Lower and Middle Messel Formation. There the beds dip toward the pit centre, and the
+upper layers slide on them like a tilted stack of plates.
+
+That is why the network exists: decades after mining ended, the slopes are still
+moving. It has been monitored since 1993, and Nix concluded that none of the slopes meet
+the German long-term safety factors (DIN 1054).
+
 ## How the positions were made
 
 ```mermaid
