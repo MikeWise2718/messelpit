@@ -5,6 +5,10 @@ the research borehole **FB 2001** as a striped column. The **Section** tool cuts
 them. It is a **schematic** model: the depths are published values; the **shapes**
 between them are invented to be plausible. Treat it as an illustration, not a map.
 
+In the layer panel, each sheet and the borehole has its own **checkbox**, and a
+**Sheet opacity** slider sets how see-through the sheets are. Your choice is remembered
+with the scene.
+
 ## The layer stack (top to bottom)
 
 The deposit is the fill of a maar: a crater blasted by an eruption ~48 million years ago,
@@ -12,7 +16,7 @@ then filled by a lake whose muds became the oil shale.
 
 | Unit | What it is | At FB 2001 (depth below ground) | Colour |
 |---|---|---|---|
-| *(mined away)* | oil shale removed 1885–1971; the pale "lid" at 168 m marks the ground before mining | — | pale |
+| *(mined away)* | oil shale removed 1885–1971; the pale "lid" (**Pre-mining ground surface**) marks the ground before mining. It is deliberately **flat**, at 168 m, over the deposit only: a schematic level, not a reconstructed landscape. From inside the pit you see its underside as a grey sheet in the sky; untick it to hide it | — | pale |
 | **Middle Messel-Fm** | the laminated **oil shale** (Schwarzpelit) — the fossil layer | 0–100 m | black |
 | **Lower Messel-Fm** | breccias, turbidites, sands and silts washed in from the crater walls | 100–229 m | brown |
 | Tuffitic sediment | transition below the lake fill | 229–240 m | sand |
