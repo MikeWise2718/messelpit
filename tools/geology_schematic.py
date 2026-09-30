@@ -6,7 +6,7 @@ needs numpy and rasterio only to read the DGM1 height at the borehole.
 
 Output format (dtlite "geology" overlay, local metres, m NN):
   { "dtlite": {...}, "grid": {x0, y_top, dx, nx, ny},            # row 0 = north
-    "surfaces": [{id, title, unit, color, note, z: [nx*ny | null], max_thickness_m?}],
+    "surfaces": [{id, title, unit, color, note, z: [nx*ny | null], max_thickness_m?, default_hidden?}],
     "fills": {ground_unit, frame, section_bottom_m_nn},     # for section cuts
     "columns": [{id, title, x, y, ground_z, radius_m, note, segments: [...]}] }
 """
@@ -76,6 +76,8 @@ def build(toml_path: Path, dem_path: Path) -> dict:
         out = {k: s[k] for k in ("id", "title", "unit", "color", "note")} | {"z": zs}
         if "max_thickness_m" in s:
             out["max_thickness_m"] = s["max_thickness_m"]
+        if s.get("default_hidden"):
+            out["default_hidden"] = True   # the viewer starts with this sheet switched off
         surfaces.append(out)
 
     with rasterio.open(dem_path) as src:

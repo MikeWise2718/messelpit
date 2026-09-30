@@ -52,6 +52,9 @@ unit = "Pre-mining ground surface"
 color = "#e3d3a4"
 kind = "flat"
 z = 168.0
+# starts switched off in the viewer: a flat sheet over the pit is hard to read (a grey
+# ceiling from inside the pit) -- the section cut still shows the mined-away band
+default_hidden = true
 note = "Oil shale was ~160 m thick before mining over a base at ~6 m NN (p. 35) -> top ~166 m NN, plus 1-3 m Quaternary (p. 36); the Upper Messel-Fm (30-35 m) survived only in three marginal troughs (p. 36). The volume between this lid and today's ground is what was mined, 1885-1971."
 
 [[surface]]
