@@ -51,6 +51,66 @@ are given with a translation.
 | **DT** | Digital twin | A detailed computer model of a real place, kept in step with data about it. |
 | **UNESCO** | United Nations Educational, Scientific and Cultural Organization | Lists Messel as a World Heritage site (1995). |
 
+## Geology terms
+
+In the order the story goes: the eruption, the lake that filled the crater, the older
+rocks around it, the shape of it all, and the words from mining and monitoring.
+
+### The eruption
+
+| Term | Meaning |
+|---|---|
+| **Maar** | A broad volcanic crater with a low rim, blasted out by an explosive eruption and usually filled by a lake afterwards. Messel is one, ~48 million years old. |
+| **Phreatomagmatic** | Driven by magma meeting groundwater: the water flashes to steam and the rock above is blown apart. How a maar forms. |
+| **Diatreme** | The carrot-shaped volcanic pipe under a maar, filled with the shattered rock that fell back into the vent. |
+| **Tuff** | Rock made of consolidated volcanic ash. |
+| **Lapilli** | Volcanic fragments 2–64 mm across (Latin for "little stones"). A **lapilli tuff** is tuff full of them: the ash and debris of the Messel eruption itself. |
+| **Breccia** | Rock made of broken, sharp-edged fragments cemented together; the angles show they were not carried far. **Diatreme breccia** is the rubble filling the pipe. |
+| **Clast** | One fragment in such a rock, e.g. the amphibolite clasts in the diatreme breccia. |
+| **Tuffite, tuffitic** | Sediment that is partly volcanic ash and partly ordinary sediment reworked by water. At Messel, the transition from the eruption deposits to the lake. |
+
+### The lake fill
+
+| Term | Meaning |
+|---|---|
+| **Messel Formation** | The sediments of the crater lake, divided into **Lower** (debris washed in from the crater walls), **Middle** (the oil shale) and **Upper** (the youngest part, left only in places). |
+| **Turbidite** | A layer laid down by an underwater avalanche of mud and sand (a turbidity current), coarse at the bottom and fining upwards. Common in the Lower Messel Formation, from slides off the steep crater walls. |
+| **Oil shale** | A fine-grained rock rich in organic matter that yields oil when heated. The reason Messel was mined (1885–1971) and the layer the fossils come from. |
+| **Schwarzpelit** | "Black pelite" (pelite = mudstone): the local German name for the Messel oil shale. |
+| **Laminated** | Made of very thin layers. The oil shale's laminae were laid down undisturbed on the floor of a deep, still lake, which is a large part of why its fossils are so complete. |
+| **Eocene** | The geological epoch from about 56 to 34 million years ago; Messel dates from it. |
+
+### The older rocks around the crater
+
+| Term | Meaning |
+|---|---|
+| **Rotliegend** | Red sandstones and conglomerates of the early Permian, about 300–270 million years old. The name is an old miners' term, "the red layers lying below". |
+| **Granodiorite, diorite** | Coarse-grained rocks that crystallised from magma deep underground. Granodiorite sits between granite and diorite; diorite is darker, with little quartz. |
+| **Amphibolite** | A dark green-black metamorphic rock, mostly amphibole (hornblende) and feldspar. |
+| **Crystalline** | Igneous and metamorphic rock, as opposed to sediment. "Groundwater in the crystalline" means water in these hard basement rocks. |
+
+### Shape and structure
+
+| Term | Meaning |
+|---|---|
+| **Dip** | The angle by which a layer tilts from horizontal. Messel's beds dip 20–25° toward the rims. |
+| **Fault** | A break in the rock along which the two sides have moved. |
+| **Listric fault** | A curved, spoon-shaped fault: steep near the surface, flattening with depth. The crater walls are bounded by them. |
+| **Structural low** | The deepest point of a layer; here, where the base of the oil shale lies lowest and the fill is thickest. |
+| **Trough** | An elongated low. Krister's model suggests the deep part is a narrow trough rather than a round bowl. |
+| **Cross-section** | A vertical slice through the ground, like the Section tool shows. |
+| **Borehole pick** | A depth in a borehole log where a geologist marks a boundary, e.g. the base of the oil shale (Krister's model uses 195). |
+
+### Mining and monitoring
+
+| Term | Meaning |
+|---|---|
+| **Bench** | A terrace cut into the pit wall by the mining; the steps visible on the slopes. |
+| **Slide scarp** | The steep break left at the top of a landslide. Messel's slopes have several near the rim. |
+| **Inclinometer** | A cased borehole in which a probe measures tilt at each depth, showing how the ground is sliding sideways. |
+| **Piezometer** | A tube open at one depth that measures the groundwater level there. |
+| **Geodetic point** | A surveyed marker whose position is measured again and again to detect movement. |
+
 ## The software
 
 | Term | Stands for | Meaning here |
