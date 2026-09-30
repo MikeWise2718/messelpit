@@ -16,7 +16,7 @@ then filled by a lake whose muds became the oil shale.
 
 | Unit | What it is | At FB 2001 (depth below ground) | Colour |
 |---|---|---|---|
-| *(mined away)* | oil shale removed 1885–1971; the pale "lid" (**Pre-mining ground surface**) marks the ground before mining. It is deliberately **flat**, at 168 m, over the deposit only: a schematic level, not a reconstructed landscape. From inside the pit you see its underside as a grey sheet in the sky; untick it to hide it | — | pale |
+| *(mined away)* | oil shale removed 1885–1971; the pale "lid" (**Pre-mining ground surface**) marks the ground before mining. It is deliberately **flat**, at 168 m, over the deposit only: a schematic level, not a reconstructed landscape. It **starts hidden** (from inside the pit its underside reads as a grey sheet in the sky); tick it to show it | — | pale |
 | **Middle Messel-Fm** | the laminated **oil shale** (Schwarzpelit) — the fossil layer | 0–100 m | black |
 | **Lower Messel-Fm** | breccias, turbidites, sands and silts washed in from the crater walls | 100–229 m | brown |
 | Tuffitic sediment | transition below the lake fill | 229–240 m | sand |
