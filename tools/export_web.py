@@ -9,6 +9,8 @@ the sibling dtlite checkout. What this adds on top:
 
 - the schematic geological layer model (data/geology_schematic.toml, built by
   tools/geology_schematic.py) as a dtlite geology overlay;
+- Krister Smith's boreholes (sibling repo messel-dt, data/v0) as a second, columns-only
+  geology overlay (tools/krister_boreholes.py) -- skipped if that checkout is absent;
 - the scene docs (docs/web/*.md, shown in dtlite's Docs panel) and the source list
   (docs/web/sources.json, shown in About);
 - the Nix (2003) monitoring stations (docs/messel-nix-2003-stations.csv), transformed
@@ -100,6 +102,16 @@ def main(argv=None):
     geology.write_text(json.dumps(geo, separators=(",", ":")), encoding="utf-8")
     console.print(f"geology: {len(geo['surfaces'])} surfaces, {len(geo['columns'])} column(s) -> {geology}")
 
+    from krister_boreholes import SOURCE as BH_SOURCE, build as build_boreholes
+    boreholes = None
+    if BH_SOURCE.is_file():
+        bh = build_boreholes(BH_SOURCE, prep / "dem.tif", origin)
+        boreholes = stage / "messel.boreholes.json"
+        boreholes.write_text(json.dumps(bh, separators=(",", ":")), encoding="utf-8")
+        console.print(f"boreholes: {len(bh['columns'])} (Krister Smith v0) -> {boreholes}")
+    else:
+        console.print(f"[yellow]boreholes skipped[/yellow]: {BH_SOURCE} not found")
+
     if not DTLITE.is_dir():
         console.print(f"[red]dtlite checkout not found at {DTLITE}[/red] (set DTLITE_DIR)")
         return 2
@@ -109,6 +121,7 @@ def main(argv=None):
            "-st", str(a.step), "-sc", str(a.sidecar),
            "-dr", str(REPO / "out" / "messel.osm.drape.json"),
            "-gj", str(stations), "-go", str(geology),
+           *(["-go", str(boreholes)] if boreholes else []),
            "-dd", str(REPO / "docs" / "web"), "-so", str(REPO / "docs" / "web" / "sources.json"),
            "-o", str(a.out.resolve())]
     if a.tiles:

@@ -30,9 +30,13 @@ wall_angle_deg = 60.0
 # chosen so the slope at the rim is tan(dip_at_rim).
 dip_at_rim_deg = 22.5
 # The structural low / FB 2001 site. Nix: FB 2001 "im Zentrum der Grube" (p. 30), in
-# the structural low "im Südosten des Vorkommens" (p. 37). The published text gives no
-# coordinates. ASSUMPTION: the lowest point of today's pit floor (DGM1 103.8 m NN).
-low = [2622.0, 3567.0]
+# the structural low "im Südosten des Vorkommens" (p. 37), but Nix gives no coordinates.
+# FB 2001's position is from Krister Smith's borehole database (messel-dt, data/v0/
+# README.md, 2026-10): GK3 R 3482757.75 / H 5531296.42, collar 105.9 m NN -> UTM 32N ->
+# local (2689.6, 3523.4); DGM1 there today is 105.7 m. (Until 2026-10-07 this was an
+# ASSUMED lowest point of today's pit floor, 80 m away.) ASSUMPTION that remains: the
+# bowl's lowest point sits exactly at FB 2001.
+low = [2689.6, 3523.4]
 
 # Section fills (for the viewer's section cut): what lies between today's ground and the
 # topmost surface below it, and the frame the maar is cut into. A surface ABOVE the
@@ -63,9 +67,9 @@ title = "Base of the oil shale / top of the Lower Messel-Fm"
 unit = "Lower Messel-Formation (breccias, turbidites, tuffitic)"
 color = "#9a7650"
 kind = "bowl"
-z_centre = 6.0
-max_thickness_m = 135.0    # FB 2001: 100-229 m depth (p. 30)
-note = "Base of the Schwarzpelit at ~6 m NN in the structural low (borehole 6/24 and FB 2001), ~99 m remaining, ~160 m before mining (p. 35)."
+z_centre = 11.9           # FB 2001: oil-shale base at 94 m depth below a 105.9 m collar (Smith v0)
+max_thickness_m = 134.0    # FB 2001: 94-228 m depth (Smith v0)
+note = "Base of the oil shale at 11.9 m NN in FB 2001 (94 m depth; Krister Smith's borehole database, messel-dt v0). Nix (2003) gives ~6 m NN in the structural low and ~99 m of oil shale remaining (p. 35)."
 
 [[surface]]
 id = "top_tuffite"
@@ -73,9 +77,9 @@ title = "Base of the Messel-Formation (lake fill)"
 unit = "Tuffitic sediments (transition below the lake fill)"
 color = "#b3a77c"
 kind = "bowl"
-z_centre = -129.0
-max_thickness_m = 11.0     # FB 2001: 229-240 m depth (p. 30)
-note = "Base of the Messel-Formation at ~-129 m NN in FB 2001 (p. 37); FB 2001 drilled 229 m of lacustrine fill (p. 30)."
+z_centre = -122.1         # FB 2001: lake-fill base at 228 m depth (Smith v0)
+max_thickness_m = 12.0     # FB 2001: 228-240 m depth (Smith v0 / Nix p. 30)
+note = "Base of the Messel-Formation at -122.1 m NN in FB 2001 (228 m depth; Smith v0). Nix (2003) gives ~-129 m NN (p. 37) and 229 m of lacustrine fill (p. 30)."
 
 [[surface]]
 id = "top_lapilli_tuff"
@@ -83,7 +87,7 @@ title = "Top of the lapilli tuff (diatreme)"
 unit = "Lapilli tuff (phreatomagmatic eruption products)"
 color = "#7f9168"
 kind = "pipe"
-z_centre = -140.0          # 240 m depth in FB 2001 (p. 30), ground ~100 m NN
+z_centre = -134.1          # 240 m depth in FB 2001 (p. 30) below the 105.9 m collar
 pipe_fraction = 0.40       # ASSUMPTION: diatreme radius as a fraction of the deposit
 max_thickness_m = 133.0    # 240-373 m depth (p. 30)
 note = "Lapilli tuff between 240 and 373 m depth in FB 2001 (p. 30). The diatreme lies under the structural low (p. 37); its width here is schematic."
@@ -94,22 +98,24 @@ title = "Top of the diatreme breccia"
 unit = "Diatreme breccia (Rotliegend / granodiorite / amphibolite clasts)"
 color = "#6f5d78"
 kind = "pipe"
-z_centre = -273.0          # 373 m depth in FB 2001
+z_centre = -267.1          # 373 m depth in FB 2001 (Smith v0: top of the diatreme)
 pipe_fraction = 0.30
 note = "Layered mega-breccia below 373 m depth in FB 2001, drilled to 433 m (p. 30)."
 
-# FB 2001 column: depths below ground from the log summary (p. 30). Ground elevation is
-# read from the DGM1 at `structure.low`.
+# FB 2001 column: depths below ground. The unit boundaries at 94, 228 and 373 m are from
+# Krister Smith's database (messel-dt v0); the finer splits at 208 and 240 m and the end
+# depth from Nix's log summary (p. 30). Ground elevation is read from the DGM1 at
+# `structure.low` (105.7 m; the collar was 105.9 m).
 [column]
 id = "fb2001"
-title = "Research borehole FB Messel 2001 (location schematic)"
+title = "Research borehole FB Messel 2001"
 radius_m = 6.0
-note = "Drilled 2001 by FIS / GGA / HLUG in the pit centre, 433 m deep (p. 30). Depths are from the log summary; the position is the ASSUMED structural low."
+note = "Drilled 2001 by FIS / GGA / HLUG in the pit centre, 433 m deep (Nix 2003, p. 30). Position and main boundaries from Krister Smith's borehole database (messel-dt v0); finer splits from Nix."
 segments = [
-  { from_m = 0,   to_m = 100, unit = "Middle Messel-Fm: laminated oil shale (Schwarzpelit)", color = "#3d3a35" },
-  { from_m = 100, to_m = 208, unit = "Lower Messel-Fm: breccious sediments (Rotliegend, granodiorite, amphibolite clasts)", color = "#9a7650" },
-  { from_m = 208, to_m = 229, unit = "Lower Messel-Fm: fine layered sands, silts, breccias", color = "#b08a5e" },
-  { from_m = 229, to_m = 240, unit = "Tuffitic sediment", color = "#b3a77c" },
+  { from_m = 0,   to_m = 94,  unit = "Middle Messel-Fm: laminated oil shale (Schwarzpelit)", color = "#3d3a35" },
+  { from_m = 94,  to_m = 208, unit = "Lower Messel-Fm: breccious sediments (Rotliegend, granodiorite, amphibolite clasts)", color = "#9a7650" },
+  { from_m = 208, to_m = 228, unit = "Lower Messel-Fm: fine layered sands, silts, breccias", color = "#b08a5e" },
+  { from_m = 228, to_m = 240, unit = "Tuffitic sediment", color = "#b3a77c" },
   { from_m = 240, to_m = 373, unit = "Lapilli tuff", color = "#7f9168" },
   { from_m = 373, to_m = 433, unit = "Diatreme breccia", color = "#6f5d78" },
 ]

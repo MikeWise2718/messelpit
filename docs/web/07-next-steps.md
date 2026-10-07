@@ -8,8 +8,10 @@ Where this scene can go from here, as of 2026-09-29. The working tracker is
 | Step | What it needs | Effect |
 |---|---|---|
 | **Krister Smith's borehole model** ("Messel DT v0", GemPy, 811 boreholes, 195 picks of the oil shale's base) | an export from Krister (surfaces per unit or a lithology grid, plus the borehole table) | replaces the schematic bowl with a model built from boreholes; plan and open questions in `dthub/specs/messel-subsurface-model.md` |
-| **Boreholes as a layer** | the same borehole table | 811 clickable columns showing collar, depth and picked contacts |
-| **FB 2001's real position** | read off the 2003 Senckenberg site plan (`messel_karten/Position Lagerplatz Bohrklein .jpg`), fitted to the inclinometers it shows | the borehole column and the structural low in their surveyed place |
+| **Boreholes as a layer** | ~~done 2026-10-07 for the v0 starter set (43 holes)~~; the full table (811 holes) and collar heights from Krister | every borehole, from its real collar |
+| ~~**FB 2001's real position**~~ | done 2026-10-07, from Krister Smith's database | — |
+| **Möller (1989)** stratigraphy (unpublished; in `messel-dt/docs`) | read it; georeference his geological map of the pit | marker beds (M, Alpha, Beta, Gamma) and facies as a check on the model |
+| **2025 excavation quadrants** (12 shapefiles with fossil content, in `messel-dt/docs/Q1-2025`) | convert to the scene frame | the dug blocks as a layer — the start of placing fossils in the basin |
 | **Harms' geological map** (1:25,000, with a cross-section through the pit) | georeference `messel_karten/MGKd_*.psd` | mapped outcrops and the published A–B section as a check on any model |
 | **Nix Abb. 6** (NW–SE section with the mined-out sediments restored) | georeference the figure | a second published section to compare with the section cut |
 

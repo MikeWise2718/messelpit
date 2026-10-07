@@ -26,7 +26,8 @@ village is north of the pit, the Darmstadt–Dieburg railway runs along its nort
 | Roads and buildings | OpenStreetMap, draped on the terrain | real (crowd-mapped) | [OSM layer](03-osm.md) |
 | Coloured pins in the pit | 171 slope-monitoring stations from a 2003 study | real positions | [Monitoring stations](04-monitoring-stations.md) |
 | Coloured sheets under the ground (Geology, off at start) | the rock layers of the maar | **schematic** | [Geology](05-geology.md) |
-| A striped column in the pit centre | the 433 m research borehole FB 2001 | real depths, **assumed** position | [Geology](05-geology.md) |
+| A striped column in the pit centre | the 433 m research borehole FB 2001 | real depths and position (Krister Smith's database) | [Geology](05-geology.md) |
+| Thinner striped columns (Boreholes, off at start) | 43 boreholes from Krister Smith's database, with their contacts | real (v0 test data) | [Geology](05-geology.md) |
 
 What is known and what is assumed is collected in one place:
 [Assumptions & unknowns](06-assumptions.md).

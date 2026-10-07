@@ -29,8 +29,9 @@ these is resolved, fix the data and strike it here.
 - The **outline** is an ellipse fitted to today's pit, not the mapped deposit boundary.
 - The **bowl shape**, the **22.5° rim dip**, the **60° crater walls** and the **pipe
   widths** are invented to fit six published numbers.
-- **FB 2001's position** is assumed (the lowest point of today's pit floor); the 2003
-  site plan in `messel_karten` shows the real one.
+- **FB 2001's position** is now real (Krister Smith's database); assumed is only that
+  the bowl's lowest point sits exactly there.
+- The **boreholes** start at today's ground, not their drill collars (not in v0).
 - Unit thicknesses away from FB 2001 are FB 2001's.
 - Krister Smith's borehole model suggests the real shape differs (a narrow deep
   trough, a north–south deposit) — see [Geology](05-geology.md).
