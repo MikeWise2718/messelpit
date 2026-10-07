@@ -17,6 +17,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "pyproj>=3.7.2",
     "pytest>=8",
 ]
 
